@@ -1,0 +1,46 @@
+{
+  "kind": "collectionType",
+  "collectionName": "soal_kuises",
+  "info": {
+    "singularName": "soal-kuis",
+    "pluralName": "soal-kuises",
+    "displayName": "Soal Kuis"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "kuis": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::kuis.kuis",
+      "inversedBy": "soal_kuis"
+    },
+    "pertanyaan": {
+      "type": "string"
+    },
+    "jenis": {
+      "type": "enumeration",
+      "enum": [
+        "multiple_choice",
+        "esai",
+        "tugas"
+      ]
+    },
+    "pilihan": {
+      "type": "blocks"
+    },
+    "jawabanBenar": {
+      "type": "string"
+    },
+    "bobot": {
+      "type": "integer"
+    },
+    "jawaban_kuis": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::jawaban-kuis.jawaban-kuis",
+      "mappedBy": "soal_kui"
+    }
+  }
+}

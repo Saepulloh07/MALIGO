@@ -1,0 +1,35 @@
+{
+  "name": "lms-backend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A Strapi application",
+  "scripts": {
+    "build": "strapi build",
+    "deploy": "strapi deploy",
+    "develop": "strapi develop",
+    "start": "strapi start",
+    "strapi": "strapi"
+  },
+  "dependencies": {
+    "@strapi/plugin-cloud": "5.10.2",
+    "@strapi/plugin-users-permissions": "^5.10.2",
+    "@strapi/provider-email-nodemailer": "^5.10.2",
+    "@strapi/provider-upload-aws-s3": "^5.12.5",
+    "@strapi/strapi": "^5.11.0",
+    "nodemailer": "^6.10.0",
+    "pg": "8.8.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-router-dom": "^6.0.0",
+    "strapi-advanced-uuid": "^2.0.2",
+    "strapi-plugin-media-upload": "^1.1.2",
+    "styled-components": "^6.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0 <=22.x.x",
+    "npm": ">=6.0.0"
+  },
+  "strapi": {
+    "uuid": "fbd9db3d-2808-4cca-a636-0e3b22ee2a22"
+  }
+}

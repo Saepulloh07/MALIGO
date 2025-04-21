@@ -1,0 +1,51 @@
+{
+  "kind": "collectionType",
+  "collectionName": "dosens",
+  "info": {
+    "singularName": "dosen",
+    "pluralName": "dosens",
+    "displayName": "Dosen",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "nidn": {
+      "type": "string"
+    },
+    "nip": {
+      "type": "string"
+    },
+    "users_permissions_user": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "dosen"
+    },
+    "program_studi": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::program-studi.program-studi",
+      "inversedBy": "dosens"
+    },
+    "matakuliahs": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::matakuliah.matakuliah",
+      "mappedBy": "dosens"
+    },
+    "undangan_mahasiswa": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::undangan-mahasiswa.undangan-mahasiswa",
+      "mappedBy": "diundang_oleh"
+    },
+    "namaLengkap": {
+      "type": "string"
+    },
+    "imageUrl": {
+      "type": "string"
+    }
+  }
+}

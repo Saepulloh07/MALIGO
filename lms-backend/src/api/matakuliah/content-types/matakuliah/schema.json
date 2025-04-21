@@ -1,0 +1,63 @@
+{
+  "kind": "collectionType",
+  "collectionName": "matakuliahs",
+  "info": {
+    "singularName": "matakuliah",
+    "pluralName": "matakuliahs",
+    "displayName": "matakuliah",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "nama": {
+      "type": "string"
+    },
+    "kode": {
+      "type": "string"
+    },
+    "dosens": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::dosen.dosen",
+      "inversedBy": "matakuliahs"
+    },
+    "program_studi": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::program-studi.program-studi",
+      "inversedBy": "matakuliahs"
+    },
+    "semester": {
+      "type": "integer"
+    },
+    "pertemuans": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::pertemuan.pertemuan",
+      "mappedBy": "matakuliah"
+    },
+    "ujians": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::ujian.ujian",
+      "mappedBy": "matakuliah"
+    },
+    "undangan_mahasiswas": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::undangan-mahasiswa.undangan-mahasiswa",
+      "mappedBy": "matakuliah"
+    },
+    "rekap_nilais": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::rekap-nilai.rekap-nilai",
+      "mappedBy": "matakuliah"
+    },
+    "sks": {
+      "type": "integer"
+    }
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "kind": "collectionType",
+  "collectionName": "pertemuans",
+  "info": {
+    "singularName": "pertemuan",
+    "pluralName": "pertemuans",
+    "displayName": "pertemuan"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "matakuliah": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::matakuliah.matakuliah",
+      "inversedBy": "pertemuans"
+    },
+    "pertemuanKe": {
+      "type": "integer"
+    },
+    "topik": {
+      "type": "string"
+    },
+    "tanggal": {
+      "type": "date"
+    },
+    "materises": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::materi.materi",
+      "mappedBy": "pertemuan"
+    },
+    "kuis": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::kuis.kuis",
+      "mappedBy": "pertemuan"
+    },
+    "progress_belajars": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::progress-belajar.progress-belajar",
+      "mappedBy": "pertemuan"
+    }
+  }
+}

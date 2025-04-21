@@ -1,0 +1,78 @@
+{
+  "kind": "collectionType",
+  "collectionName": "mahasiswas",
+  "info": {
+    "singularName": "mahasiswa",
+    "pluralName": "mahasiswas",
+    "displayName": "Mahasiswa",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "nim": {
+      "type": "string",
+      "unique": true
+    },
+    "semester": {
+      "type": "integer"
+    },
+    "status_class": {
+      "type": "enumeration",
+      "enum": [
+        "aktif",
+        "pending",
+        "nonaktif"
+      ]
+    },
+    "users_permissions_user": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "mahasiswa"
+    },
+    "program_studi": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::program-studi.program-studi",
+      "inversedBy": "mahasiswas"
+    },
+    "jawaban_kuis": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::jawaban-kuis.jawaban-kuis",
+      "mappedBy": "mahasiswa"
+    },
+    "jawaban_ujians": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::jawaban-ujian.jawaban-ujian",
+      "mappedBy": "mahasiswa"
+    },
+    "undangan_mahasiswas": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::undangan-mahasiswa.undangan-mahasiswa",
+      "mappedBy": "mahasiswa"
+    },
+    "progress_belajars": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::progress-belajar.progress-belajar",
+      "mappedBy": "mahasiswa"
+    },
+    "rekap_nilais": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::rekap-nilai.rekap-nilai",
+      "mappedBy": "mahasiswa"
+    },
+    "namaLengkap": {
+      "type": "string"
+    },
+    "imageUrl": {
+      "type": "string"
+    }
+  }
+}

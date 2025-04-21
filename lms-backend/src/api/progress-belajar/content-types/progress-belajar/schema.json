@@ -1,0 +1,40 @@
+{
+  "kind": "collectionType",
+  "collectionName": "progress_belajars",
+  "info": {
+    "singularName": "progress-belajar",
+    "pluralName": "progress-belajars",
+    "displayName": "Progress Belajar"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "mahasiswa": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::mahasiswa.mahasiswa",
+      "inversedBy": "progress_belajars"
+    },
+    "pertemuan": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::pertemuan.pertemuan",
+      "inversedBy": "progress_belajars"
+    },
+    "status_class": {
+      "type": "enumeration",
+      "enum": [
+        "belum_dibuka",
+        "sedang_dibaca",
+        "selesai"
+      ]
+    },
+    "waktuMulai": {
+      "type": "datetime"
+    },
+    "waktuSelesai": {
+      "type": "datetime"
+    }
+  }
+}

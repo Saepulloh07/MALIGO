@@ -1,0 +1,32 @@
+{
+  "kind": "collectionType",
+  "collectionName": "jawaban_ujians",
+  "info": {
+    "singularName": "jawaban-ujian",
+    "pluralName": "jawaban-ujians",
+    "displayName": "Jawaban Ujian"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "soal_ujian": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::soal-ujian.soal-ujian",
+      "inversedBy": "jawaban_ujians"
+    },
+    "mahasiswa": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::mahasiswa.mahasiswa",
+      "inversedBy": "jawaban_ujians"
+    },
+    "jawaban": {
+      "type": "text"
+    },
+    "nilai": {
+      "type": "integer"
+    }
+  }
+}

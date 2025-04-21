@@ -1,0 +1,41 @@
+{
+  "kind": "collectionType",
+  "collectionName": "ujians",
+  "info": {
+    "singularName": "ujian",
+    "pluralName": "ujians",
+    "displayName": "Ujian"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "matakuliah": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::matakuliah.matakuliah",
+      "inversedBy": "ujians"
+    },
+    "judul": {
+      "type": "string"
+    },
+    "instruksi": {
+      "type": "text"
+    },
+    "waktuMulai": {
+      "type": "datetime"
+    },
+    "waktuSelesai": {
+      "type": "datetime"
+    },
+    "timer": {
+      "type": "time"
+    },
+    "soal_ujians": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::soal-ujian.soal-ujian",
+      "mappedBy": "ujian"
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "kind": "collectionType",
+  "collectionName": "jurusans",
+  "info": {
+    "singularName": "jurusan",
+    "pluralName": "jurusans",
+    "displayName": "Jurusan",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "nama": {
+      "type": "string"
+    },
+    "program_studis": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::program-studi.program-studi",
+      "mappedBy": "jurusan"
+    }
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "kind": "collectionType",
+  "collectionName": "soal_ujians",
+  "info": {
+    "singularName": "soal-ujian",
+    "pluralName": "soal-ujians",
+    "displayName": "Soal Ujian"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "ujian": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::ujian.ujian",
+      "inversedBy": "soal_ujians"
+    },
+    "pertanyaan": {
+      "type": "text"
+    },
+    "jenis": {
+      "type": "enumeration",
+      "enum": [
+        "multiple_choice",
+        "esai"
+      ]
+    },
+    "pilihan": {
+      "type": "blocks"
+    },
+    "jawabanBenar": {
+      "type": "text"
+    },
+    "bobot": {
+      "type": "integer"
+    },
+    "jawaban_ujians": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::jawaban-ujian.jawaban-ujian",
+      "mappedBy": "soal_ujian"
+    }
+  }
+}

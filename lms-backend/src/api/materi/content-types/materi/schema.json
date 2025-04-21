@@ -1,0 +1,54 @@
+{
+  "kind": "collectionType",
+  "collectionName": "materis",
+  "info": {
+    "singularName": "materi",
+    "pluralName": "materis",
+    "displayName": "materi",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "pertemuan": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::pertemuan.pertemuan",
+      "inversedBy": "materises"
+    },
+    "judul": {
+      "type": "string"
+    },
+    "deskripsi": {
+      "type": "blocks"
+    },
+    "videoYoutubeUrl": {
+      "type": "string"
+    },
+    "isiTeks": {
+      "type": "blocks"
+    },
+    "fileUrl": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "documentUrl": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "type": "media",
+      "multiple": true
+    }
+  }
+}

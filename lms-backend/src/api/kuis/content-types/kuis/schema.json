@@ -1,0 +1,46 @@
+{
+  "kind": "collectionType",
+  "collectionName": "kuises",
+  "info": {
+    "singularName": "kuis",
+    "pluralName": "kuises",
+    "displayName": "Kuis"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "pertemuan": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::pertemuan.pertemuan",
+      "inversedBy": "kuis"
+    },
+    "instruksi": {
+      "type": "blocks"
+    },
+    "jenis": {
+      "type": "enumeration",
+      "enum": [
+        "multiple_choice",
+        "esai",
+        "tugas"
+      ]
+    },
+    "waktuMulai": {
+      "type": "datetime"
+    },
+    "waktuSelesai": {
+      "type": "datetime"
+    },
+    "timer": {
+      "type": "time"
+    },
+    "soal_kuis": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::soal-kuis.soal-kuis",
+      "mappedBy": "kuis"
+    }
+  }
+}

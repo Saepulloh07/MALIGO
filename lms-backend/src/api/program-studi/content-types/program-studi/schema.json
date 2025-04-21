@@ -1,0 +1,42 @@
+{
+  "kind": "collectionType",
+  "collectionName": "program_studis",
+  "info": {
+    "singularName": "program-studi",
+    "pluralName": "program-studis",
+    "displayName": "Program Studi",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "nama": {
+      "type": "string"
+    },
+    "jurusan": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::jurusan.jurusan",
+      "inversedBy": "program_studis"
+    },
+    "dosens": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::dosen.dosen",
+      "mappedBy": "program_studi"
+    },
+    "mahasiswas": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::mahasiswa.mahasiswa",
+      "mappedBy": "program_studi"
+    },
+    "matakuliahs": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::matakuliah.matakuliah",
+      "mappedBy": "program_studi"
+    }
+  }
+}

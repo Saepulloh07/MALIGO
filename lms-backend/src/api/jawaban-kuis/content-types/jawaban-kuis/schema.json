@@ -1,0 +1,32 @@
+{
+  "kind": "collectionType",
+  "collectionName": "jawaban_kuises",
+  "info": {
+    "singularName": "jawaban-kuis",
+    "pluralName": "jawaban-kuises",
+    "displayName": "Jawaban Kuis"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "soal_kui": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::soal-kuis.soal-kuis",
+      "inversedBy": "jawaban_kuis"
+    },
+    "mahasiswa": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::mahasiswa.mahasiswa",
+      "inversedBy": "jawaban_kuis"
+    },
+    "jawaban": {
+      "type": "text"
+    },
+    "nilai": {
+      "type": "integer"
+    }
+  }
+}

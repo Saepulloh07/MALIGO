@@ -1,0 +1,43 @@
+{
+  "kind": "collectionType",
+  "collectionName": "undangan_mahasiswas",
+  "info": {
+    "singularName": "undangan-mahasiswa",
+    "pluralName": "undangan-mahasiswas",
+    "displayName": "Undangan Mahasiswa"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "matakuliah": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::matakuliah.matakuliah",
+      "inversedBy": "undangan_mahasiswas"
+    },
+    "mahasiswa": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::mahasiswa.mahasiswa",
+      "inversedBy": "undangan_mahasiswas"
+    },
+    "status_class": {
+      "type": "enumeration",
+      "enum": [
+        "pending",
+        "aktif",
+        "nonaktif"
+      ]
+    },
+    "diundang_oleh": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::dosen.dosen",
+      "inversedBy": "undangan_mahasiswa"
+    },
+    "tanggalUndangan": {
+      "type": "datetime"
+    }
+  }
+}
