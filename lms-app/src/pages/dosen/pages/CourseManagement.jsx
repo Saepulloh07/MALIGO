@@ -61,7 +61,7 @@ const CourseManagement = () => {
           flexGrow: 1,
           p: 3,
           mt: '64px',
-          ml: sidebarOpen ? '50px' : '-100px',
+          ml: sidebarOpen ? '0px' : '0px',
           transition: 'margin-left 0.3s ease-in-out',
           bgcolor: '#f5f5f5',
           minHeight: 'calc(100vh - 64px)',

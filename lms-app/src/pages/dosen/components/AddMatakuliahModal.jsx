@@ -13,6 +13,7 @@ import {
   FormControlLabel,
   Grid,
   InputAdornment,
+  Tooltip,
 } from '@mui/material';
 import {
   Subject as SubjectIcon,
@@ -22,7 +23,7 @@ import {
   PersonSearch as PersonSearchIcon,
   Save as SaveIcon,
   Cancel as CancelIcon,
-  ConfirmationNumber as ConNum
+  ConfirmationNumber as ConNum,
 } from '@mui/icons-material';
 import { useSnackbar } from 'notistack';
 import { debounce } from 'lodash';
@@ -71,6 +72,11 @@ const AddMatakuliahModal = ({ open, onClose, refreshMatakuliah }) => {
   const [filteredDosenList, setFilteredDosenList] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const [currentUserDosenId, setCurrentUserDosenId] = useState(null);
+
+  // Get current user's NIP from localStorage
+  const user = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null;
+  const userNip = user?.username || null;
 
   // Fetch program studi list
   useEffect(() => {
@@ -88,7 +94,7 @@ const AddMatakuliahModal = ({ open, onClose, refreshMatakuliah }) => {
     fetchData();
   }, [enqueueSnackbar]);
 
-  // Fetch dosen list based on selected program studi
+  // Fetch dosen list based on selected program studi and set current user's dosen
   useEffect(() => {
     const fetchDosen = async () => {
       if (formData.programStudi) {
@@ -98,6 +104,21 @@ const AddMatakuliahModal = ({ open, onClose, refreshMatakuliah }) => {
           const dosens = dosenRes.data || [];
           setDosenList(dosens);
           setFilteredDosenList(dosens);
+
+          // Find the current user's dosen based on NIP
+          const currentDosen = dosens.find((dosen) => dosen.nip === userNip);
+          if (currentDosen) {
+            setCurrentUserDosenId(currentDosen.id);
+            // Automatically select the current user's dosen
+            setFormData((prev) => ({
+              ...prev,
+              dosens: prev.dosens.includes(currentDosen.id)
+                ? prev.dosens
+                : [...prev.dosens, currentDosen.id],
+            }));
+          } else {
+            setCurrentUserDosenId(null);
+          }
         } catch (error) {
           enqueueSnackbar('Gagal mengambil data dosen', { variant: 'error' });
         } finally {
@@ -108,10 +129,11 @@ const AddMatakuliahModal = ({ open, onClose, refreshMatakuliah }) => {
         setFilteredDosenList([]);
         setFormData((prev) => ({ ...prev, dosens: [] }));
         setSearchQuery('');
+        setCurrentUserDosenId(null);
       }
     };
     fetchDosen();
-  }, [formData.programStudi, enqueueSnackbar]);
+  }, [formData.programStudi, enqueueSnackbar, userNip]);
 
   // Debounced dosen search
   const filterDosen = useCallback(
@@ -144,6 +166,19 @@ const AddMatakuliahModal = ({ open, onClose, refreshMatakuliah }) => {
 
   // Handle dosen selection
   const handleDosenChange = (dosenId) => {
+    // Prevent deselecting the current user's dosen
+    if (dosenId === currentUserDosenId) {
+      return;
+    }
+
+    // Only allow selecting other dosens if the current user's dosen is selected
+    if (!formData.dosens.includes(currentUserDosenId)) {
+      enqueueSnackbar('Anda harus memilih diri Anda sebagai dosen terlebih dahulu', {
+        variant: 'warning',
+      });
+      return;
+    }
+
     setFormData((prev) => {
       const dosens = prev.dosens.includes(dosenId)
         ? prev.dosens.filter((id) => id !== dosenId)
@@ -155,6 +190,10 @@ const AddMatakuliahModal = ({ open, onClose, refreshMatakuliah }) => {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!formData.dosens.includes(currentUserDosenId)) {
+      enqueueSnackbar('Anda harus memilih diri Anda sebagai dosen', { variant: 'error' });
+      return;
+    }
     try {
       const submitData = {
         nama: formData.nama,
@@ -252,8 +291,8 @@ const AddMatakuliahModal = ({ open, onClose, refreshMatakuliah }) => {
                           '&.Mui-focused fieldset': { borderColor: theme.accent },
                         },
                         '& label.Mui-focused': { color: theme.accent },
-                        '& .MuiInputBase-input': { color: theme.textPrimary }, // Use darker textPrimary
-                        }}
+                        '& .MuiInputBase-input': { color: theme.textPrimary },
+                      }}
                     />
                     <TextField
                       fullWidth
@@ -277,8 +316,8 @@ const AddMatakuliahModal = ({ open, onClose, refreshMatakuliah }) => {
                           '&.Mui-focused fieldset': { borderColor: theme.accent },
                         },
                         '& label.Mui-focused': { color: theme.accent },
-                        '& .MuiInputBase-input': { color: theme.textPrimary }, // Use darker textPrimary
-                        }}
+                        '& .MuiInputBase-input': { color: theme.textPrimary },
+                      }}
                     />
                     <FormControl fullWidth margin="normal">
                       <InputLabel sx={{ color: theme.textPrimary }}>
@@ -358,7 +397,7 @@ const AddMatakuliahModal = ({ open, onClose, refreshMatakuliah }) => {
                       variant="caption"
                       sx={{ mb: 2, display: 'block', color: theme.textSecondary }}
                     >
-                      Pilih dosen yang akan mengajar mata kuliah ini.
+                      Anda harus memilih diri Anda sebagai dosen sebelum menambahkan dosen lain.
                     </Typography>
                     <TextField
                       fullWidth
@@ -404,29 +443,61 @@ const AddMatakuliahModal = ({ open, onClose, refreshMatakuliah }) => {
                         <Grid container spacing={1}>
                           {filteredDosenList.map((dosen) => (
                             <Grid item xs={12} sm={6} key={dosen.id}>
-                              <FormControlLabel
-                                control={
-                                  <Checkbox
-                                    checked={formData.dosens.includes(dosen.id)}
-                                    onChange={() => handleDosenChange(dosen.id)}
-                                    sx={{
-                                      color: theme.textPrimary,
-                                      '&.Mui-checked': { color: theme.accent },
-                                    }}
-                                  />
+                              <Tooltip
+                                title={
+                                  dosen.id === currentUserDosenId
+                                    ? 'Anda harus menjadi dosen untuk mata kuliah ini'
+                                    : !formData.dosens.includes(currentUserDosenId)
+                                    ? 'Pilih diri Anda terlebih dahulu sebelum menambahkan dosen lain'
+                                    : ''
                                 }
-                                label={`${dosen.namaLengkap} (${dosen.nip})`}
-                                sx={{
-                                  color: theme.textPrimary,
-                                  bgcolor: formData.dosens.includes(dosen.id)
-                                    ? `${theme.accent}10`
-                                    : 'transparent',
-                                  p: 1,
-                                  borderRadius: 1,
-                                  '&:hover': { bgcolor: `${theme.accent}20` },
-                                  width: '100%',
-                                }}
-                              />
+                                disableHoverListener={
+                                  dosen.id !== currentUserDosenId &&
+                                  formData.dosens.includes(currentUserDosenId)
+                                }
+                              >
+                                <FormControlLabel
+                                  control={
+                                    <Checkbox
+                                      checked={formData.dosens.includes(dosen.id)}
+                                      onChange={() => handleDosenChange(dosen.id)}
+                                      disabled={
+                                        // Disable if it's the current user's dosen (always checked)
+                                        dosen.id === currentUserDosenId ||
+                                        // Disable other dosens if current user's dosen is not selected
+                                        (dosen.id !== currentUserDosenId &&
+                                          !formData.dosens.includes(currentUserDosenId))
+                                      }
+                                      sx={{
+                                        color: theme.textPrimary,
+                                        '&.Mui-checked': { color: theme.accent },
+                                        '&.Mui-disabled': {
+                                          color: dosen.id === currentUserDosenId ? theme.accent : '#bdbdbd',
+                                        },
+                                      }}
+                                    />
+                                  }
+                                  label={`${dosen.namaLengkap} (${dosen.nip})${
+                                    dosen.id === currentUserDosenId ? ' (Anda)' : ''
+                                  }`}
+                                  sx={{
+                                    color: theme.textPrimary,
+                                    bgcolor: formData.dosens.includes(dosen.id)
+                                      ? `${theme.accent}10`
+                                      : 'transparent',
+                                    p: 1,
+                                    borderRadius: 1,
+                                    '&:hover': {
+                                      bgcolor:
+                                        dosen.id === currentUserDosenId ||
+                                        !formData.dosens.includes(currentUserDosenId)
+                                          ? 'transparent'
+                                          : `${theme.accent}20`,
+                                    },
+                                    width: '100%',
+                                  }}
+                                />
+                              </Tooltip>
                             </Grid>
                           ))}
                         </Grid>

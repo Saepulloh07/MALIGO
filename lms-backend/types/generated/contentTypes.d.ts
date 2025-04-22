@@ -696,7 +696,7 @@ export interface ApiMateriMateri extends Struct.CollectionTypeSchema {
       'images' | 'files' | 'videos' | 'audios',
       true
     >;
-    isiTeks: Schema.Attribute.Blocks;
+    isiTeks: Schema.Attribute.JSON;
     judul: Schema.Attribute.String;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<

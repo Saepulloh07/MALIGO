@@ -19,7 +19,6 @@ export const AuthProvider = ({ children }) => {
           const parsedUser = JSON.parse(storedUser);
           setToken(storedToken);
           setUser(parsedUser);
-          console.log('Loaded from localStorage:', { token: storedToken, user: parsedUser });
 
           // Optional: Validate token with server (uncomment if API is available)
           /*
@@ -45,7 +44,6 @@ export const AuthProvider = ({ children }) => {
   }, [enqueueSnackbar]);
 
   const login = (jwt, userData) => {
-    console.log('Login:', { jwt, userData });
     setToken(jwt);
     setUser(userData);
     localStorage.setItem('jwt', jwt);

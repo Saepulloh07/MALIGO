@@ -29,7 +29,6 @@ export const getMatakuliahList = async () => {
 
 export const updateMatakuliah = async (documentId, data) => {
   try {
-    // Step 1: Fetch the current matakuliah data with all relationships
     console.log(`Fetching matakuliah with URL: ${API_URL}/matakuliahs/${documentId}?populate=*`);
     const currentMatakuliahResponse = await api.get(`/matakuliahs/${documentId}?populate=*`);
     console.log('API response:', JSON.stringify(currentMatakuliahResponse.data, null, 2));
@@ -39,13 +38,11 @@ export const updateMatakuliah = async (documentId, data) => {
       throw new Error(`Invalid matakuliah data received from server: ${JSON.stringify(currentMatakuliahResponse.data)}`);
     }
 
-    // Step 2: Check if kode is unique (excluding the current matakuliah)
     const kodeCheckResponse = await api.get(`/matakuliahs?filters[kode][$eq]=${data.kode}&filters[documentId][$ne]=${documentId}`);
     if (kodeCheckResponse.data.data.length > 0) {
       throw new Error(`Kode ${data.kode} sudah digunakan oleh mata kuliah lain`);
     }
 
-    // Step 3: Prepare the new data, merging updated fields with existing data
     const newData = {
       nama: data.nama,
       kode: data.kode,
@@ -58,9 +55,7 @@ export const updateMatakuliah = async (documentId, data) => {
       undangan_mahasiswas: currentMatakuliah.undangan_mahasiswas?.map(undangan => undangan.id) || [],
       rekap_nilais: currentMatakuliah.rekap_nilais?.map(rekap => rekap.id) || [],
     };
-    // Step 4: Delete the existing matakuliah
     await api.delete(`/matakuliahs/${documentId}`);
-    // Step 5: Create a new matakuliah with the merged data
     const response = await api.post('/matakuliahs', { data: newData });
     return response.data;
   } catch (error) {
@@ -113,6 +108,27 @@ export const createPertemuan = async (data) => {
   }
 };
 
+export const updatePertemuan = async (documentId, data) => {
+  try {
+    console.log('Updating pertemuan with payload:', JSON.stringify(data, null, 2));
+    const response = await api.put(`/pertemuans/${documentId}`, { data });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating pertemuan:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const deletePertemuan = async (documentId) => {
+  try {
+    const response = await api.delete(`/pertemuans/${documentId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting pertemuan:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
 export const getPertemuanList = async (matakuliahId = '') => {
   try {
     let url = '/pertemuans?populate[matakuliah][fields][0]=nama';
@@ -135,6 +151,20 @@ export const createMateri = async (data) => {
     return response.data;
   } catch (error) {
     console.error('Error creating materi:', error.response?.data || error.message);
+    // Log detailed validation errors if available
+    if (error.response?.data?.error?.details?.errors) {
+      console.error('Validation errors:', JSON.stringify(error.response.data.error.details.errors, null, 2));
+    }
+    throw error;
+  }
+};
+
+export const deleteMateri = async (documentId) => {
+  try {
+    const response = await api.delete(`/materis/${documentId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting materi:', error.response?.data || error.message);
     throw error;
   }
 };

@@ -48,40 +48,6 @@ const theme = {
   error: '#d32f2f',
 };
 
-// Transform Tiptap JSON to Strapi-compatible format
-const transformTiptapToStrapi = (tiptapJson) => {
-  const transformNode = (node) => {
-    const transformed = { ...node };
-    if (node.content) {
-      transformed.children = node.content.map(transformNode);
-      delete transformed.content;
-    }
-    if (node.attrs?.level) {
-      transformed.level = node.attrs.level;
-      delete transformed.attrs;
-    }
-    if (node.marks) {
-      node.marks.forEach((mark) => {
-        if (mark.type === 'bold') transformed.bold = true;
-        if (mark.type === 'italic') transformed.italic = true;
-        if (mark.type === 'link') {
-          transformed.type = 'link';
-          transformed.url = mark.attrs.href;
-        }
-      });
-      delete transformed.marks;
-    }
-    if (node.type === 'bulletList') transformed.type = 'list-unordered';
-    if (node.type === 'orderedList') transformed.type = 'list-ordered';
-    if (node.type === 'listItem') transformed.type = 'list-item';
-    return transformed;
-  };
-
-  return tiptapJson.content
-    ? tiptapJson.content.map(transformNode)
-    : [{ type: 'paragraph', children: [{ type: 'text', text: '' }] }];
-};
-
 // Convert plain text to Strapi rich text JSON
 const textToStrapiJson = (text) => {
   if (!text) {
@@ -125,7 +91,7 @@ const AddMateriModal = ({ open, onClose, matakuliah, pertemuan, refreshMatakulia
     videoYoutubeUrl: '',
     isiTeks: { type: 'doc', content: [] },
     image: null,
-    document: null, // New field for document file
+    document: null,
   });
   const [pertemuanList, setPertemuanList] = useState([]);
   const [materiList, setMateriList] = useState([]);
@@ -264,12 +230,13 @@ const AddMateriModal = ({ open, onClose, matakuliah, pertemuan, refreshMatakulia
       const submitData = {
         judul: formData.judul,
         deskripsi: textToStrapiJson(formData.deskripsi),
-        videoYoutubeUrl: formData.videoYoutubeUrl || null,
-        isiTeks: transformTiptapToStrapi(formData.isiTeks),
-        pertemuan: parseInt(formData.pertemuan),
-        fileUrl: imageId || null,
-        documentUrl: documentId || null, // New field for document URL
+        videoYoutubeUrl: formData.videoYoutubeUrl || undefined,
+        isiTeks: formData.isiTeks, // Send raw Tiptap JSON
+        pertemuan: { connect: [{ id: parseInt(formData.pertemuan) }] },
+        fileUrl: imageId ? { connect: [{ id: imageId }] } : undefined,
+        documentUrl: documentId ? { connect: [{ id: documentId }] } : undefined,
       };
+
       await createMateri(submitData);
       enqueueSnackbar('Materi berhasil ditambahkan', { variant: 'success' });
       refreshMatakuliah();
@@ -289,10 +256,16 @@ const AddMateriModal = ({ open, onClose, matakuliah, pertemuan, refreshMatakulia
       editor?.commands.clearContent();
     } catch (error) {
       console.error('Submission error:', error.response?.data);
-      enqueueSnackbar(
-        `Gagal menambahkan materi: ${error.response?.data?.error?.message || 'Unknown error'}`,
-        { variant: 'error' }
-      );
+      const validationErrors = error.response?.data?.error?.details?.errors;
+      if (validationErrors) {
+        const errorMessages = validationErrors.map((err) => err.message).join('; ');
+        enqueueSnackbar(`Gagal menambahkan materi: ${errorMessages}`, { variant: 'error' });
+      } else {
+        enqueueSnackbar(
+          `Gagal menambahkan materi: ${error.response?.data?.error?.message || 'Unknown error'}`,
+          { variant: 'error' }
+        );
+      }
     }
   };
 
