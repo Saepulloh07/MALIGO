@@ -15,11 +15,13 @@ import {
   Tooltip,
 } from '@mui/material';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import TambahMahasiswa from './TambahMahasiswa';
+import LihatMahasiswa from './LihatMahasiswa';
 import AddPertemuanModal from './AddPertemuanModal';
 import AddMateriModal from './AddMateriModal';
 import EditMatakuliahModal from './EditMatakuliahModal';
@@ -28,7 +30,6 @@ import HapusPertemuanModal from './HapusPertemuanModal';
 import HapusMateriModal from './HapusMateriModal';
 import { useSnackbar } from 'notistack';
 
-// Professional color palette
 const theme = {
   primary: '#005a6f',
   secondary: '#f8fafc',
@@ -37,9 +38,10 @@ const theme = {
   border: '#e2e8f0',
   error: '#d32f2f',
   muted: '#64748b',
+  hover: '#004a5a',
+  shadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
 };
 
-// Utility function to truncate deskripsi
 const truncateDeskripsi = (text, maxLength = 100) => {
   if (!text) return 'Tidak ada deskripsi';
   if (text.length <= maxLength) return text;
@@ -48,7 +50,6 @@ const truncateDeskripsi = (text, maxLength = 100) => {
   return lastSpace > 0 ? truncated.substring(0, lastSpace) + '...' : truncated + '...';
 };
 
-// Utility function to render Tiptap JSON as paragraphs with formatting
 const renderTiptapContent = (content) => {
   if (!content || !Array.isArray(content)) return <Typography sx={{ color: theme.muted, fontStyle: 'italic' }}>Tidak ada isi teks</Typography>;
 
@@ -64,12 +65,8 @@ const renderTiptapContent = (content) => {
 
       if (textNode.marks) {
         textNode.marks.forEach((mark) => {
-          if (mark.type === 'bold') {
-            style.fontWeight = 600;
-          }
-          if (mark.type === 'italic') {
-            style.fontStyle = 'italic';
-          }
+          if (mark.type === 'bold') style.fontWeight = 600;
+          if (mark.type === 'italic') style.fontStyle = 'italic';
           if (mark.type === 'link') {
             element = 'a';
             props.href = mark.attrs.href;
@@ -101,6 +98,7 @@ const renderTiptapContent = (content) => {
 const CourseAccordion = ({ matakuliahList, setSelectedMatakuliah, refreshMatakuliah }) => {
   const { enqueueSnackbar } = useSnackbar();
   const [openInviteModal, setOpenInviteModal] = useState(false);
+  const [openViewModal, setOpenViewModal] = useState(false);
   const [openPertemuanModal, setOpenPertemuanModal] = useState(false);
   const [openMateriModal, setOpenMateriModal] = useState(false);
   const [openEditMatakuliahModal, setOpenEditMatakuliahModal] = useState(false);
@@ -120,7 +118,6 @@ const CourseAccordion = ({ matakuliahList, setSelectedMatakuliah, refreshMatakul
     matakuliah.dosens?.some((dosen) => dosen.nip === userNip)
   );
 
-  // Handle opening the invite modal with matakuliah validation
   const handleOpenInviteModal = (matakuliah) => {
     if (!matakuliah || !matakuliah.id || !matakuliah.program_studi?.id || !matakuliah.semester) {
       console.error('Invalid matakuliah:', matakuliah);
@@ -139,7 +136,20 @@ const CourseAccordion = ({ matakuliahList, setSelectedMatakuliah, refreshMatakul
     });
   };
 
-  // Effect to open modal after setting matakuliah
+  const handleOpenViewModal = (matakuliah) => {
+    if (!matakuliah || !matakuliah.id) {
+      console.error('Invalid matakuliah:', matakuliah);
+      enqueueSnackbar('Data mata kuliah tidak valid', { variant: 'error' });
+      return;
+    }
+    console.log('Opening view modal with matakuliah:', matakuliah);
+    setSelectedMatakuliahForModal({
+      id: matakuliah.id,
+      nama: matakuliah.nama,
+    });
+    setOpenViewModal(true);
+  };
+
   useEffect(() => {
     if (pendingMatakuliah) {
       setSelectedMatakuliahForModal(pendingMatakuliah);
@@ -150,6 +160,11 @@ const CourseAccordion = ({ matakuliahList, setSelectedMatakuliah, refreshMatakul
 
   const handleCloseInviteModal = () => {
     setOpenInviteModal(false);
+    setSelectedMatakuliahForModal(null);
+  };
+
+  const handleCloseViewModal = () => {
+    setOpenViewModal(false);
     setSelectedMatakuliahForModal(null);
   };
 
@@ -234,7 +249,7 @@ const CourseAccordion = ({ matakuliahList, setSelectedMatakuliah, refreshMatakul
             py: 4,
             bgcolor: theme.secondary,
             borderRadius: '12px',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+            boxShadow: theme.shadow,
           }}
         >
           Tidak ada mata kuliah yang tersedia saat ini.
@@ -249,7 +264,7 @@ const CourseAccordion = ({ matakuliahList, setSelectedMatakuliah, refreshMatakul
                   bgcolor: '#ffffff',
                   border: `1px solid ${theme.border}`,
                   borderRadius: '12px',
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+                  boxShadow: theme.shadow,
                   transition: 'all 0.3s ease',
                   '&:hover': {
                     boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
@@ -289,10 +304,24 @@ const CourseAccordion = ({ matakuliahList, setSelectedMatakuliah, refreshMatakul
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <Typography
                         variant="body2"
-                        sx={{ color: theme.muted, fontWeight: 500 }}
+                        sx={{ color: theme.muted, fontWeight: 500, fontSize: '0.9rem' }}
                       >
                         Mahasiswa: {matakuliah.undangan_mahasiswas?.length || 0}
                       </Typography>
+                      <Tooltip title="Lihat Mahasiswa">
+                        <IconButton
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenViewModal(matakuliah);
+                          }}
+                          sx={{
+                            color: theme.accent,
+                            '&:hover': { bgcolor: 'rgba(77, 182, 172, 0.1)' },
+                          }}
+                        >
+                          <VisibilityIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
                       <Tooltip title="Undang Mahasiswa">
                         <IconButton
                           onClick={(e) => {
@@ -317,19 +346,19 @@ const CourseAccordion = ({ matakuliahList, setSelectedMatakuliah, refreshMatakul
                   </Typography>
                   <Typography
                     variant="body2"
-                    sx={{ color: theme.accent, fontWeight: 500, mb: 3 }}
+                    sx={{ color: theme.accent, fontWeight: 500, mb: 3, fontSize: '0.9rem' }}
                   >
                     Jumlah Pertemuan: {matakuliah.pertemuans?.length || 0}
                   </Typography>
                   <Collapse in={expandedCard === matakuliah.id} timeout={300}>
                     <Typography
                       variant="h6"
-                      sx={{ color: theme.text, fontWeight: 500, mb: 2 }}
+                      sx={{ color: theme.text, fontWeight: 500, mb: 2, fontSize: '1.25rem' }}
                     >
                       Daftar Pertemuan dan Materi
                     </Typography>
                     {matakuliah.pertemuans?.length === 0 ? (
-                      <Typography sx={{ color: theme.muted, fontStyle: 'italic' }}>
+                      <Typography sx={{ color: theme.muted, fontStyle: 'italic', fontSize: '0.9rem' }}>
                         Belum ada pertemuan yang ditambahkan.
                       </Typography>
                     ) : (
@@ -421,12 +450,12 @@ const CourseAccordion = ({ matakuliahList, setSelectedMatakuliah, refreshMatakul
                             </Box>
                             <Typography
                               variant="subtitle2"
-                              sx={{ color: theme.text, mt: 1, mb: 2, fontWeight: 500 }}
+                              sx={{ color: theme.text, mt: 1, mb: 2, fontWeight: 500, fontSize: '1rem' }}
                             >
                               Materi:
                             </Typography>
                             {!pertemuan.materis || pertemuan.materis.length === 0 ? (
-                              <Typography sx={{ color: theme.muted, fontStyle: 'italic', ml: 2 }}>
+                              <Typography sx={{ color: theme.muted, fontStyle: 'italic', ml: 2, fontSize: '0.9rem' }}>
                                 Belum ada materi yang ditambahkan.
                               </Typography>
                             ) : (
@@ -505,7 +534,7 @@ const CourseAccordion = ({ matakuliahList, setSelectedMatakuliah, refreshMatakul
                                           }}
                                         />
                                       ) : (
-                                        <Typography sx={{ color: theme.muted, textAlign: 'center', fontStyle: 'italic' }}>
+                                        <Typography sx={{ color: theme.muted, textAlign: 'center', fontStyle: 'italic', fontSize: '0.9rem' }}>
                                           Tidak ada video tersedia.
                                         </Typography>
                                       )}
@@ -535,6 +564,7 @@ const CourseAccordion = ({ matakuliahList, setSelectedMatakuliah, refreshMatakul
                       color: theme.accent,
                       px: 3,
                       py: 1,
+                      fontSize: '0.9rem',
                       '&:hover': {
                         bgcolor: 'rgba(77, 182, 172, 0.1)',
                         borderColor: theme.accent,
@@ -554,12 +584,14 @@ const CourseAccordion = ({ matakuliahList, setSelectedMatakuliah, refreshMatakul
                     }}
                     sx={{
                       bgcolor: theme.primary,
+                      color: '#ffffff',
                       textTransform: 'none',
                       fontWeight: 500,
                       px: 3,
                       py: 1,
+                      fontSize: '0.9rem',
                       '&:hover': {
-                        bgcolor: '#004a5a',
+                        bgcolor: theme.hover,
                         boxShadow: '0 4px 12px rgba(0, 90, 111, 0.3)',
                       },
                       '&:focus': {
@@ -582,6 +614,13 @@ const CourseAccordion = ({ matakuliahList, setSelectedMatakuliah, refreshMatakul
           handleClose={handleCloseInviteModal}
           matakuliah={selectedMatakuliahForModal}
           refreshMatakuliah={refreshMatakuliah}
+        />
+      )}
+      {selectedMatakuliahForModal && (
+        <LihatMahasiswa
+          open={openViewModal}
+          handleClose={handleCloseViewModal}
+          matakuliah={selectedMatakuliahForModal}
         />
       )}
       <AddPertemuanModal
