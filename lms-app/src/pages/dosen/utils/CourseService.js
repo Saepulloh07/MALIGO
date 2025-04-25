@@ -147,7 +147,19 @@ export const getPertemuanList = async (matakuliahId = '') => {
 export const createMateri = async (data) => {
   try {
     console.log('Creating materi with payload:', JSON.stringify(data, null, 2));
-    const response = await api.post('/materis', { data });
+    // Ensure media fields (fileUrl and documentUrl) are sent as IDs directly
+    const payload = {
+      data: {
+        judul: data.judul,
+        deskripsi: data.deskripsi,
+        videoYoutubeUrl: data.videoYoutubeUrl,
+        isiTeks: data.isiTeks,
+        pertemuan: data.pertemuan,
+        fileUrl: data.fileUrl ? data.fileUrl : null, // Send file ID directly
+        documentUrl: data.documentUrl ? data.documentUrl : null, // Send file ID directly
+      },
+    };
+    const response = await api.post('/materis', payload);
     return response.data;
   } catch (error) {
     console.error('Error creating materi:', error.response?.data || error.message);

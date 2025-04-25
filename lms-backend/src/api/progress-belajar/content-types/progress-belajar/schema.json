@@ -4,7 +4,8 @@
   "info": {
     "singularName": "progress-belajar",
     "pluralName": "progress-belajars",
-    "displayName": "Progress Belajar"
+    "displayName": "Progress Belajar",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true
@@ -35,6 +36,12 @@
     },
     "waktuSelesai": {
       "type": "datetime"
+    },
+    "materis": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::materi.materi",
+      "inversedBy": "progress_belajars"
     }
   }
 }

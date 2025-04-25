@@ -50,6 +50,12 @@
     },
     "isiTeks": {
       "type": "json"
+    },
+    "progress_belajars": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::progress-belajar.progress-belajar",
+      "mappedBy": "materis"
     }
   }
 }

@@ -708,6 +708,10 @@ export interface ApiMateriMateri extends Struct.CollectionTypeSchema {
       'manyToOne',
       'api::pertemuan.pertemuan'
     >;
+    progress_belajars: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::progress-belajar.progress-belajar'
+    >;
     publishedAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -800,6 +804,7 @@ export interface ApiProgressBelajarProgressBelajar
   extends Struct.CollectionTypeSchema {
   collectionName: 'progress_belajars';
   info: {
+    description: '';
     displayName: 'Progress Belajar';
     pluralName: 'progress-belajars';
     singularName: 'progress-belajar';
@@ -821,6 +826,7 @@ export interface ApiProgressBelajarProgressBelajar
       'manyToOne',
       'api::mahasiswa.mahasiswa'
     >;
+    materis: Schema.Attribute.Relation<'manyToOne', 'api::materi.materi'>;
     pertemuan: Schema.Attribute.Relation<
       'manyToOne',
       'api::pertemuan.pertemuan'

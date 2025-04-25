@@ -14,6 +14,8 @@ import StudentProgress from '../pages/dosen/pages/StudentProgress';
 import ProfilePage from '../pages/dosen/pages/ProfilePage';
 import DashboardMahasiswa from '../pages/mahasiswa/DashboardMahasiswa';
 import EnrolledCourses from '../pages/mahasiswa/pages/EnrolledCourses';
+import CourseDetail from '../pages/mahasiswa/pages/CourseDetail';
+import MeetingDetail from '../pages/mahasiswa/components/MeetingDetail';
 import Assignments from '../pages/mahasiswa/pages/Assignments';
 import DosenLayout from '../layouts/DosenLayout';
 import MahasiswaLayout from '../layouts/MahasiswaLayout';
@@ -62,6 +64,9 @@ const AppRoutes = () => {
       >
         <Route index element={<DashboardMahasiswa />} />
         <Route path="courses" element={<EnrolledCourses />} />
+        <Route path="courses/:code" element={<CourseDetail />}>
+          <Route path="pertemuan/:meetingNumber" element={<MeetingDetail />} />
+        </Route>
         <Route path="assignments" element={<Assignments />} />
       </Route>
 

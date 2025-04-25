@@ -13,6 +13,7 @@ import {
   IconButton,
   Collapse,
   Tooltip,
+  Divider,
 } from '@mui/material';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -51,47 +52,135 @@ const truncateDeskripsi = (text, maxLength = 100) => {
 };
 
 const renderTiptapContent = (content) => {
-  if (!content || !Array.isArray(content)) return <Typography sx={{ color: theme.muted, fontStyle: 'italic' }}>Tidak ada isi teks</Typography>;
+  if (!content || !Array.isArray(content)) {
+    return <Typography sx={{ color: theme.muted, fontStyle: 'italic' }}>Tidak ada isi teks</Typography>;
+  }
 
   return content.map((node, index) => {
-    if (node.type !== 'paragraph') return null;
+    switch (node.type) {
+      case 'paragraph':
+        return (
+          <Typography
+            key={index}
+            variant="body2"
+            sx={{ color: theme.text, mb: 1, fontSize: '0.85rem', lineHeight: 1.6 }}
+          >
+            {node.content
+              ? node.content.map((child, childIndex) => {
+                  if (child.type === 'text') {
+                    let style = {};
+                    let element = 'span';
+                    const props = {};
 
-    const renderText = (textNode) => {
-      if (!textNode.text) return null;
+                    if (child.marks) {
+                      child.marks.forEach((mark) => {
+                        if (mark.type === 'bold') style.fontWeight = 600;
+                        if (mark.type === 'italic') style.fontStyle = 'italic';
+                        if (mark.type === 'link') {
+                          element = 'a';
+                          props.href = mark.attrs.href;
+                          props.target = mark.attrs.target || '_blank';
+                          props.rel = mark.attrs.rel || 'noopener noreferrer';
+                          style.color = theme.accent;
+                          style.textDecoration = 'underline';
+                        }
+                      });
+                    }
 
-      let style = {};
-      let element = 'span';
-      const props = {};
+                    return (
+                      <React.Fragment key={childIndex}>
+                        {React.createElement(element, { ...props, style }, child.text)}
+                      </React.Fragment>
+                    );
+                  } else if (child.type === 'hardBreak') {
+                    return <br key={childIndex} />;
+                  } else if (child.type === 'image') {
+                    return (
+                      <img
+                        key={childIndex}
+                        src={child.attrs.src}
+                        alt={child.attrs.alt || 'Materi Image'}
+                        style={{
+                          maxWidth: '100%',
+                          maxHeight: '200px',
+                          objectFit: 'contain',
+                          borderRadius: '8px',
+                          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                          margin: '8px 0',
+                        }}
+                      />
+                    );
+                  }
+                  return null;
+                })
+              : 'Tidak ada isi teks'}
+          </Typography>
+        );
 
-      if (textNode.marks) {
-        textNode.marks.forEach((mark) => {
-          if (mark.type === 'bold') style.fontWeight = 600;
-          if (mark.type === 'italic') style.fontStyle = 'italic';
-          if (mark.type === 'link') {
-            element = 'a';
-            props.href = mark.attrs.href;
-            props.target = mark.attrs.target;
-            props.rel = mark.attrs.rel;
-            style.color = theme.accent;
-            style.textDecoration = 'underline';
-          }
-        });
-      }
+      case 'bulletList':
+        return (
+          <Box
+            key={index}
+            component="ul"
+            sx={{ pl: 4, color: theme.text, mb: 1, fontSize: '0.85rem', lineHeight: 1.6 }}
+          >
+            {node.content?.map((item, itemIndex) => (
+              <Typography
+                key={itemIndex}
+                component="li"
+                variant="body2"
+                sx={{ color: theme.text, mb: 0.5 }}
+              >
+                {item.content?.map((child, childIndex) =>
+                  child.type === 'text' ? child.text : renderTiptapContent([child])
+                )}
+              </Typography>
+            ))}
+          </Box>
+        );
 
-      return React.createElement(element, { ...props, style }, textNode.text);
-    };
+      case 'orderedList':
+        return (
+          <Box
+            key={index}
+            component="ol"
+            sx={{ pl: 4, color: theme.text, mb: 1, fontSize: '0.85rem', lineHeight: 1.6 }}
+          >
+            {node.content?.map((item, itemIndex) => (
+              <Typography
+                key={itemIndex}
+                component="li"
+                variant="body2"
+                sx={{ color: theme.text, mb: 0.5 }}
+              >
+                {item.content?.map((child, childIndex) =>
+                  child.type === 'text' ? child.text : renderTiptapContent([child])
+                )}
+              </Typography>
+            ))}
+          </Box>
+        );
 
-    return (
-      <Typography
-        key={index}
-        variant="body2"
-        sx={{ color: theme.muted, mb: 1, fontSize: '0.85rem', lineHeight: 1.6 }}
-      >
-        {node.content ? node.content.map((child, childIndex) => (
-          <React.Fragment key={childIndex}>{renderText(child)}</React.Fragment>
-        )) : 'Tidak ada isi teks'}
-      </Typography>
-    );
+      case 'image':
+        return (
+          <img
+            key={index}
+            src={node.attrs.src}
+            alt={node.attrs.alt || 'Materi Image'}
+            style={{
+              maxWidth: '100%',
+              maxHeight: '200px',
+              objectFit: 'contain',
+              borderRadius: '8px',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+              margin: '8px 0',
+            }}
+          />
+        );
+
+      default:
+        return null;
+    }
   });
 };
 
@@ -338,12 +427,20 @@ const CourseAccordion = ({ matakuliahList, setSelectedMatakuliah, refreshMatakul
                       </Tooltip>
                     </Box>
                   </Box>
-                  <Typography
-                    variant="body2"
-                    sx={{ color: theme.muted, mb: 2, fontSize: '0.9rem' }}
-                  >
-                    Semester {matakuliah.semester} | {matakuliah.sks} SKS
-                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: theme.muted, fontSize: '0.9rem' }}
+                    >
+                      Kode: {matakuliah.kode}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: theme.muted, fontSize: '0.9rem' }}
+                    >
+                      Semester {matakuliah.semester} | {matakuliah.sks} SKS
+                    </Typography>
+                  </Box>
                   <Typography
                     variant="body2"
                     sx={{ color: theme.accent, fontWeight: 500, mb: 3, fontSize: '0.9rem' }}
@@ -497,23 +594,66 @@ const CourseAccordion = ({ matakuliahList, setSelectedMatakuliah, refreshMatakul
                                         </Tooltip>
                                       </Box>
                                       <Typography
+                                        variant="subtitle2"
+                                        sx={{ color: theme.text, fontWeight: 500, mb: 1, fontSize: '0.9rem' }}
+                                      >
+                                        Deskripsi:
+                                      </Typography>
+                                      <Typography
                                         variant="body2"
-                                        sx={{ color: theme.muted, mb: 1, fontSize: '0.85rem' }}
+                                        sx={{ color: theme.muted, mb: 2, fontSize: '0.85rem' }}
                                       >
                                         {truncateDeskripsi(materi.deskripsi?.[0]?.children?.[0]?.text)}
                                       </Typography>
+                                      <Divider sx={{ mb: 2, borderColor: theme.border }} />
+                                      <Typography
+                                        variant="subtitle2"
+                                        sx={{ color: theme.text, fontWeight: 500, mb: 1, fontSize: '0.9rem' }}
+                                      >
+                                        Isi Materi:
+                                      </Typography>
                                       {renderTiptapContent(materi.isiTeks?.content)}
-                                      {materi.fileUrl && (
-                                        <Typography variant="body2" sx={{ color: theme.accent, fontSize: '0.85rem', mt: 1 }}>
-                                          File:{' '}
-                                          <a
-                                            href={materi.fileUrl.url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            style={{ color: theme.accent, textDecoration: 'underline' }}
+                                      {materi.fileUrl && materi.fileUrl.length > 0 && (
+                                        <Box sx={{ mt: 2 }}>
+                                          <Typography
+                                            variant="subtitle2"
+                                            sx={{ color: theme.text, fontWeight: 500, mb: 1, fontSize: '0.9rem' }}
                                           >
-                                            Unduh File
-                                          </a>
+                                            Gambar:
+                                          </Typography>
+                                          <img
+                                            src={`http://localhost:1337${materi.fileUrl[0].url}`}
+                                            alt={materi.fileUrl[0].name || 'Materi Image'}
+                                            style={{
+                                              maxWidth: '100%',
+                                              maxHeight: '200px',
+                                              objectFit: 'contain',
+                                              borderRadius: '8px',
+                                              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                                            }}
+                                          />
+                                        </Box>
+                                      )}
+                                      {materi.documentUrl && materi.documentUrl.length > 0 && (
+                                        <Typography variant="body2" sx={{ color: theme.accent, fontSize: '0.85rem', mt: 2 }}>
+                                          Dokumen:{' '}
+                                          <Button
+                                            variant="outlined"
+                                            href={`http://localhost:1337${materi.documentUrl[0].url}`}
+                                            download={materi.documentUrl[0].name}
+                                            sx={{
+                                              textTransform: 'none',
+                                              color: theme.accent,
+                                              borderColor: theme.accent,
+                                              fontSize: '0.85rem',
+                                              '&:hover': {
+                                                bgcolor: 'rgba(77, 182, 172, 0.1)',
+                                                borderColor: theme.accent,
+                                              },
+                                            }}
+                                          >
+                                            Unduh {materi.documentUrl[0].name}
+                                          </Button>
                                         </Typography>
                                       )}
                                     </Grid>

@@ -12,8 +12,10 @@ import {
   Grid,
   InputAdornment,
   IconButton,
-  ToggleButton,
-  ToggleButtonGroup,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
 import {
   School as SchoolIcon,
@@ -28,13 +30,15 @@ import {
   FormatItalic as FormatItalicIcon,
   FormatListBulleted as FormatListBulletedIcon,
   FormatListNumbered as FormatListNumberedIcon,
-  Link as LinkIcon,
+  AddPhotoAlternate as AddPhotoAlternateIcon,
   AttachFile as AttachFileIcon,
+  Link as LinkIcon, // Added LinkIcon import
 } from '@mui/icons-material';
 import { useSnackbar } from 'notistack';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
+import Image from '@tiptap/extension-image';
 import LoadingScreen from '../../../routes/LoadingScreen';
 import { createMateri, getPertemuanList, getMateriList, uploadFile } from '../utils/CourseService';
 
@@ -97,11 +101,17 @@ const AddMateriModal = ({ open, onClose, matakuliah, pertemuan, refreshMatakulia
   const [materiList, setMateriList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [imageDialogOpen, setImageDialogOpen] = useState(false);
+  const [imageUrl, setImageUrl] = useState('');
 
   const editor = useEditor({
     extensions: [
-      StarterKit.configure({ heading: { levels: [1, 2, 3] } }),
+      StarterKit.configure({ heading: false }), // Disable headings for simplicity
       Link.configure({ openOnClick: false }),
+      Image.configure({
+        inline: true,
+        allowBase64: false,
+      }),
     ],
     content: '',
     onUpdate: ({ editor }) => {
@@ -180,13 +190,21 @@ const AddMateriModal = ({ open, onClose, matakuliah, pertemuan, refreshMatakulia
     }
   };
 
-  const handleHeadingChange = (event, newHeading) => {
+  const handleInsertImage = () => {
     if (!editor) return;
-    if (newHeading) {
-      editor.chain().focus().toggleHeading({ level: parseInt(newHeading) }).run();
+    if (imageUrl && isValidImageUrl(imageUrl)) {
+      editor.chain().focus().setImage({ src: imageUrl }).run();
+      setImageUrl('');
+      setImageDialogOpen(false);
     } else {
-      editor.chain().focus().setParagraph().run();
+      enqueueSnackbar('Masukkan URL gambar yang valid (misal: https://example.com/image.jpg)', {
+        variant: 'error',
+      });
     }
+  };
+
+  const isValidImageUrl = (url) => {
+    return url.match(/\.(jpg|jpeg|png|gif|webp)$/i) && url.startsWith('http');
   };
 
   const handleLink = () => {
@@ -213,30 +231,40 @@ const AddMateriModal = ({ open, onClose, matakuliah, pertemuan, refreshMatakulia
       enqueueSnackbar('Harap lengkapi semua field wajib', { variant: 'warning' });
       return;
     }
+    setLoading(true);
     try {
       let imageId = null;
       let documentId = null;
 
       if (formData.image) {
         const uploadResponse = await uploadFile(formData.image);
-        imageId = uploadResponse[0]?.id;
+        console.log('Image upload response:', uploadResponse);
+        if (!uploadResponse[0]?.id) {
+          throw new Error('Failed to upload image: No ID returned');
+        }
+        imageId = uploadResponse[0].id;
       }
 
       if (formData.document) {
         const uploadResponse = await uploadFile(formData.document);
-        documentId = uploadResponse[0]?.id;
+        console.log('Document upload response:', uploadResponse);
+        if (!uploadResponse[0]?.id) {
+          throw new Error('Failed to upload document: No ID returned');
+        }
+        documentId = uploadResponse[0].id;
       }
 
       const submitData = {
         judul: formData.judul,
         deskripsi: textToStrapiJson(formData.deskripsi),
         videoYoutubeUrl: formData.videoYoutubeUrl || undefined,
-        isiTeks: formData.isiTeks, // Send raw Tiptap JSON
+        isiTeks: formData.isiTeks,
         pertemuan: { connect: [{ id: parseInt(formData.pertemuan) }] },
-        fileUrl: imageId ? { connect: [{ id: imageId }] } : undefined,
-        documentUrl: documentId ? { connect: [{ id: documentId }] } : undefined,
+        fileUrl: imageId ? [imageId] : undefined,
+        documentUrl: documentId ? [documentId] : undefined,
       };
 
+      console.log('Submitting materi with payload:', JSON.stringify(submitData, null, 2));
       await createMateri(submitData);
       enqueueSnackbar('Materi berhasil ditambahkan', { variant: 'success' });
       refreshMatakuliah();
@@ -255,17 +283,19 @@ const AddMateriModal = ({ open, onClose, matakuliah, pertemuan, refreshMatakulia
       setMateriList([]);
       editor?.commands.clearContent();
     } catch (error) {
-      console.error('Submission error:', error.response?.data);
+      console.error('Submission error:', error.response?.data || error.message);
       const validationErrors = error.response?.data?.error?.details?.errors;
       if (validationErrors) {
         const errorMessages = validationErrors.map((err) => err.message).join('; ');
         enqueueSnackbar(`Gagal menambahkan materi: ${errorMessages}`, { variant: 'error' });
       } else {
         enqueueSnackbar(
-          `Gagal menambahkan materi: ${error.response?.data?.error?.message || 'Unknown error'}`,
+          `Gagal menambahkan materi: ${error.response?.data?.error?.message || error.message}`,
           { variant: 'error' }
         );
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -450,32 +480,6 @@ const AddMateriModal = ({ open, onClose, matakuliah, pertemuan, refreshMatakulia
                               bgcolor: theme.secondary,
                             }}
                           >
-                            <ToggleButtonGroup
-                              value={
-                                editor?.isActive('heading')
-                                  ? editor.getAttributes('heading').level?.toString()
-                                  : editor?.isActive('paragraph')
-                                  ? ''
-                                  : ''
-                              }
-                              exclusive
-                              onChange={handleHeadingChange}
-                              size="small"
-                              sx={{ bgcolor: '#fff', borderRadius: 1 }}
-                            >
-                              <ToggleButton value="" sx={{ color: theme.text, '&.Mui-selected': { bgcolor: theme.primary, color: '#fff' } }}>
-                                P
-                              </ToggleButton>
-                              <ToggleButton value="1" sx={{ color: theme.text, '&.Mui-selected': { bgcolor: theme.primary, color: '#fff' } }}>
-                                H1
-                              </ToggleButton>
-                              <ToggleButton value="2" sx={{ color: theme.text, '&.Mui-selected': { bgcolor: theme.primary, color: '#fff' } }}>
-                                H2
-                              </ToggleButton>
-                              <ToggleButton value="3" sx={{ color: theme.text, '&.Mui-selected': { bgcolor: theme.primary, color: '#fff' } }}>
-                                H3
-                              </ToggleButton>
-                            </ToggleButtonGroup>
                             <IconButton
                               onClick={() => editor?.chain().focus().toggleBold().run()}
                               sx={{ color: editor?.isActive('bold') ? theme.primary : theme.text }}
@@ -501,6 +505,12 @@ const AddMateriModal = ({ open, onClose, matakuliah, pertemuan, refreshMatakulia
                               <FormatListNumberedIcon />
                             </IconButton>
                             <IconButton
+                              onClick={() => setImageDialogOpen(true)}
+                              sx={{ color: theme.text }}
+                            >
+                              <AddPhotoAlternateIcon />
+                            </IconButton>
+                            <IconButton
                               onClick={handleLink}
                               sx={{ color: editor?.isActive('link') ? theme.primary : theme.text }}
                             >
@@ -518,11 +528,17 @@ const AddMateriModal = ({ open, onClose, matakuliah, pertemuan, refreshMatakulia
                               '& .ProseMirror': {
                                 outline: 'none',
                               },
+                              '& img': {
+                                maxWidth: '100%',
+                                height: 'auto',
+                                margin: '8px 0',
+                                borderRadius: '4px',
+                              },
                             }}
                           />
                         </Box>
                         <Typography variant="caption" sx={{ mt: 1, color: theme.text, opacity: 0.7 }}>
-                          Gunakan toolbar untuk memformat teks (bold, italic, heading, dll)
+                          Gunakan toolbar untuk memformat teks dan menyisipkan gambar
                         </Typography>
                       </Box>
 
@@ -671,6 +687,27 @@ const AddMateriModal = ({ open, onClose, matakuliah, pertemuan, refreshMatakulia
                 </Box>
               </form>
             )}
+
+            {/* Image URL Dialog */}
+            <Dialog open={imageDialogOpen} onClose={() => setImageDialogOpen(false)}>
+              <DialogTitle>Tambahkan Gambar</DialogTitle>
+              <DialogContent>
+                <TextField
+                  fullWidth
+                  label="URL Gambar"
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  helperText="Masukkan URL gambar (misal: https://example.com/image.jpg)"
+                  sx={{ mt: 1 }}
+                />
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={() => setImageDialogOpen(false)}>Batal</Button>
+                <Button onClick={handleInsertImage} variant="contained">
+                  Sisipkan
+                </Button>
+              </DialogActions>
+            </Dialog>
           </>
         )}
       </Box>
