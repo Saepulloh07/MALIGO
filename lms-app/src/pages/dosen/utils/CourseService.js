@@ -147,7 +147,6 @@ export const getPertemuanList = async (matakuliahId = '') => {
 export const createMateri = async (data) => {
   try {
     console.log('Creating materi with payload:', JSON.stringify(data, null, 2));
-    // Ensure media fields (fileUrl and documentUrl) are sent as IDs directly
     const payload = {
       data: {
         judul: data.judul,
@@ -155,15 +154,14 @@ export const createMateri = async (data) => {
         videoYoutubeUrl: data.videoYoutubeUrl,
         isiTeks: data.isiTeks,
         pertemuan: data.pertemuan,
-        fileUrl: data.fileUrl ? data.fileUrl : null, // Send file ID directly
-        documentUrl: data.documentUrl ? data.documentUrl : null, // Send file ID directly
+        fileUrl: data.fileUrl ? data.fileUrl : null,
+        documentUrl: data.documentUrl ? data.documentUrl : null,
       },
     };
     const response = await api.post('/materis', payload);
     return response.data;
   } catch (error) {
     console.error('Error creating materi:', error.response?.data || error.message);
-    // Log detailed validation errors if available
     if (error.response?.data?.error?.details?.errors) {
       console.error('Validation errors:', JSON.stringify(error.response.data.error.details.errors, null, 2));
     }
@@ -207,5 +205,80 @@ export const uploadFile = async (file) => {
   } catch (error) {
     console.error('Error uploading file:', error.response?.data || error.message);
     throw error;
+  }
+};
+
+export const getKuisList = async (matakuliahId = '') => {
+  try {
+    let url = '/kuises?populate=*';
+    if (matakuliahId && !isNaN(matakuliahId)) {
+      url += `&filters[pertemuan][matakuliah][id][$eq]=${matakuliahId}`;
+    }
+    console.log('Fetching kuis list with URL:', `${API_URL}${url}`);
+    const response = await api.get(url);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching kuis list:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const createKuis = async (data) => {
+  try {
+    console.log('Creating kuis with payload:', JSON.stringify(data, null, 2));
+    const response = await api.post('/kuises', data);
+    return response.data;
+  } catch (error) {
+    console.error('Error creating kuis:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      details: error.response?.data?.error?.details,
+    });
+    const errorMessage =
+      error.response?.data?.error?.message ||
+      error.response?.data?.message ||
+      'Failed to create kuis';
+    throw new Error(errorMessage);
+  }
+};
+
+export const createSoalKuis = async (data) => {
+  try {
+    console.log('Creating soal_kuis with payload:', JSON.stringify(data, null, 2));
+    const response = await api.post('/soal-kuises', data);
+    return response.data;
+  } catch (error) {
+    console.error('Error creating soal_kuis:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      details: error.response?.data?.error?.details,
+    });
+    const errorMessage =
+      error.response?.data?.error?.message ||
+      error.response?.data?.message ||
+      'Failed to create soal_kuis';
+    throw new Error(errorMessage);
+  }
+};
+
+export const deleteKuis = async (documentId) => {
+  try {
+    console.log(`Deleting kuis with documentId: ${documentId}`);
+    const response = await api.delete(`/kuises/${documentId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting kuis:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      details: error.response?.data?.error?.details,
+    });
+    const errorMessage =
+      error.response?.data?.error?.message ||
+      error.response?.data?.message ||
+      'Failed to delete kuis';
+    throw new Error(errorMessage);
   }
 };

@@ -14,6 +14,8 @@ import {
   Collapse,
   Tooltip,
   Divider,
+  Chip,
+  Fade,
 } from '@mui/material';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -21,27 +23,18 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import QuizIcon from '@mui/icons-material/Quiz';
 import TambahMahasiswa from './TambahMahasiswa';
 import LihatMahasiswa from './LihatMahasiswa';
 import AddPertemuanModal from './AddPertemuanModal';
 import AddMateriModal from './AddMateriModal';
+import AddKuisModal from './AddKuisModal';
 import EditMatakuliahModal from './EditMatakuliahModal';
 import EditPertemuanModal from './EditPertemuanModal';
 import HapusPertemuanModal from './HapusPertemuanModal';
 import HapusMateriModal from './HapusMateriModal';
+import HapusKuisModal from './HapusKuisModal';
 import { useSnackbar } from 'notistack';
-
-const theme = {
-  primary: '#005a6f',
-  secondary: '#f8fafc',
-  accent: '#4db6ac',
-  text: '#1a202c',
-  border: '#e2e8f0',
-  error: '#d32f2f',
-  muted: '#64748b',
-  hover: '#004a5a',
-  shadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-};
 
 const truncateDeskripsi = (text, maxLength = 100) => {
   if (!text) return 'Tidak ada deskripsi';
@@ -53,7 +46,7 @@ const truncateDeskripsi = (text, maxLength = 100) => {
 
 const renderTiptapContent = (content) => {
   if (!content || !Array.isArray(content)) {
-    return <Typography sx={{ color: theme.muted, fontStyle: 'italic' }}>Tidak ada isi teks</Typography>;
+    return <Typography sx={{ color: '#64748b', fontStyle: 'italic', fontSize: '0.875rem' }}>Tidak ada isi teks</Typography>;
   }
 
   return content.map((node, index) => {
@@ -63,7 +56,7 @@ const renderTiptapContent = (content) => {
           <Typography
             key={index}
             variant="body2"
-            sx={{ color: theme.text, mb: 1, fontSize: '0.85rem', lineHeight: 1.6 }}
+            sx={{ color: '#1a202c', mb: 1, fontSize: '0.875rem', lineHeight: 1.6 }}
           >
             {node.content
               ? node.content.map((child, childIndex) => {
@@ -81,7 +74,7 @@ const renderTiptapContent = (content) => {
                           props.href = mark.attrs.href;
                           props.target = mark.attrs.target || '_blank';
                           props.rel = mark.attrs.rel || 'noopener noreferrer';
-                          style.color = theme.accent;
+                          style.color = '#4db6ac';
                           style.textDecoration = 'underline';
                         }
                       });
@@ -122,14 +115,14 @@ const renderTiptapContent = (content) => {
           <Box
             key={index}
             component="ul"
-            sx={{ pl: 4, color: theme.text, mb: 1, fontSize: '0.85rem', lineHeight: 1.6 }}
+            sx={{ pl: 4, color: '#1a202c', mb: 1, fontSize: '0.875rem', lineHeight: 1.6 }}
           >
             {node.content?.map((item, itemIndex) => (
               <Typography
                 key={itemIndex}
                 component="li"
                 variant="body2"
-                sx={{ color: theme.text, mb: 0.5 }}
+                sx={{ color: '#1a202c', mb: 0.5 }}
               >
                 {item.content?.map((child, childIndex) =>
                   child.type === 'text' ? child.text : renderTiptapContent([child])
@@ -144,14 +137,14 @@ const renderTiptapContent = (content) => {
           <Box
             key={index}
             component="ol"
-            sx={{ pl: 4, color: theme.text, mb: 1, fontSize: '0.85rem', lineHeight: 1.6 }}
+            sx={{ pl: 4, color: '#1a202c', mb: 1, fontSize: '0.875rem', lineHeight: 1.6 }}
           >
             {node.content?.map((item, itemIndex) => (
               <Typography
                 key={itemIndex}
                 component="li"
                 variant="body2"
-                sx={{ color: theme.text, mb: 0.5 }}
+                sx={{ color: '#1a202c', mb: 0.5 }}
               >
                 {item.content?.map((child, childIndex) =>
                   child.type === 'text' ? child.text : renderTiptapContent([child])
@@ -190,13 +183,16 @@ const CourseAccordion = ({ matakuliahList, setSelectedMatakuliah, refreshMatakul
   const [openViewModal, setOpenViewModal] = useState(false);
   const [openPertemuanModal, setOpenPertemuanModal] = useState(false);
   const [openMateriModal, setOpenMateriModal] = useState(false);
+  const [openKuisModal, setOpenKuisModal] = useState(false);
   const [openEditMatakuliahModal, setOpenEditMatakuliahModal] = useState(false);
   const [openEditPertemuanModal, setOpenEditPertemuanModal] = useState(false);
   const [openHapusPertemuanModal, setOpenHapusPertemuanModal] = useState(false);
   const [openHapusMateriModal, setOpenHapusMateriModal] = useState(false);
+  const [openHapusKuisModal, setOpenHapusKuisModal] = useState(false);
   const [selectedMatakuliahForModal, setSelectedMatakuliahForModal] = useState(null);
   const [selectedPertemuan, setSelectedPertemuan] = useState(null);
   const [selectedMateri, setSelectedMateri] = useState(null);
+  const [selectedKuis, setSelectedKuis] = useState(null);
   const [expandedCard, setExpandedCard] = useState(null);
   const [pendingMatakuliah, setPendingMatakuliah] = useState(null);
 
@@ -213,7 +209,6 @@ const CourseAccordion = ({ matakuliahList, setSelectedMatakuliah, refreshMatakul
       enqueueSnackbar('Data mata kuliah tidak valid', { variant: 'error' });
       return;
     }
-    console.log('Opening invite modal with matakuliah:', matakuliah);
     setPendingMatakuliah({
       id: matakuliah.id,
       nama: matakuliah.nama,
@@ -231,12 +226,34 @@ const CourseAccordion = ({ matakuliahList, setSelectedMatakuliah, refreshMatakul
       enqueueSnackbar('Data mata kuliah tidak valid', { variant: 'error' });
       return;
     }
-    console.log('Opening view modal with matakuliah:', matakuliah);
     setSelectedMatakuliahForModal({
       id: matakuliah.id,
       nama: matakuliah.nama,
     });
     setOpenViewModal(true);
+  };
+
+  const handleOpenKuisModal = (matakuliah, pertemuan) => {
+    if (!matakuliah || !matakuliah.id || !pertemuan || !pertemuan.id) {
+      console.error('Invalid matakuliah or pertemuan:', { matakuliah, pertemuan });
+      enqueueSnackbar('Data mata kuliah atau pertemuan tidak valid', { variant: 'error' });
+      return;
+    }
+    setSelectedMatakuliahForModal(matakuliah);
+    setSelectedPertemuan(pertemuan);
+    setOpenKuisModal(true);
+  };
+
+  const handleOpenHapusKuisModal = (matakuliah, pertemuan, kuis) => {
+    if (!matakuliah || !matakuliah.id || !pertemuan || !pertemuan.id || !kuis || !kuis.documentId) {
+      console.error('Invalid matakuliah, pertemuan, or kuis:', { matakuliah, pertemuan, kuis });
+      enqueueSnackbar('Data mata kuliah, pertemuan, atau kuis tidak valid', { variant: 'error' });
+      return;
+    }
+    setSelectedMatakuliahForModal(matakuliah);
+    setSelectedPertemuan(pertemuan);
+    setSelectedKuis(kuis);
+    setOpenHapusKuisModal(true);
   };
 
   useEffect(() => {
@@ -327,422 +344,621 @@ const CourseAccordion = ({ matakuliahList, setSelectedMatakuliah, refreshMatakul
   };
 
   return (
-    <Box sx={{ maxWidth: '1200px', mx: 'auto', mt: 4, px: { xs: 2, sm: 0 } }}>
+    <Box sx={{ maxWidth: '100%', mx: 'auto', mt: 2, px: { xs: 1, sm: 2 } }}>
       {filteredMatakuliah.length === 0 ? (
-        <Typography
-          sx={{
-            textAlign: 'center',
-            color: theme.text,
-            fontWeight: 500,
-            fontSize: { xs: '1.25rem', md: '1.5rem' },
-            py: 4,
-            bgcolor: theme.secondary,
-            borderRadius: '12px',
-            boxShadow: theme.shadow,
-          }}
-        >
-          Tidak ada mata kuliah yang tersedia saat ini.
-        </Typography>
+        <Fade in timeout={600}>
+          <Box
+            sx={{
+              textAlign: 'center',
+              py: 6,
+              bgcolor: '#ffffff',
+              borderRadius: 3,
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+              border: '1px solid #e0e7ff',
+            }}
+          >
+            <Typography
+              sx={{
+                color: '#1a202c',
+                fontWeight: 500,
+                fontSize: { xs: '1.25rem', md: '1.5rem' },
+              }}
+            >
+              Tidak ada mata kuliah yang tersedia saat ini.
+            </Typography>
+            <Typography
+              sx={{
+                color: '#64748b',
+                mt: 1,
+                fontSize: '0.875rem',
+                maxWidth: '600px',
+                mx: 'auto',
+              }}
+            >
+              Tambahkan mata kuliah baru untuk mulai mengelola materi dan pertemuan.
+            </Typography>
+          </Box>
+        </Fade>
       ) : (
-        <Grid container spacing={3}>
+        <Grid container spacing={2}>
           {filteredMatakuliah.map((matakuliah) => (
             <Grid item xs={12} key={matakuliah.id}>
-              <Card
-                onClick={() => setSelectedMatakuliah(matakuliah)}
-                sx={{
-                  bgcolor: '#ffffff',
-                  border: `1px solid ${theme.border}`,
-                  borderRadius: '12px',
-                  boxShadow: theme.shadow,
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
-                    transform: 'translateY(-4px)',
-                  },
-                  overflow: 'hidden',
-                }}
-              >
-                <CardContent sx={{ p: { xs: 3, md: 4 } }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Typography
-                        variant="h5"
-                        sx={{
-                          color: theme.text,
-                          fontWeight: 600,
-                          fontSize: { xs: '1.5rem', md: '1.75rem' },
-                        }}
-                      >
-                        {matakuliah.nama}
-                      </Typography>
-                      <Tooltip title="Edit Mata Kuliah">
-                        <IconButton
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleOpenEditMatakuliahModal(matakuliah);
-                          }}
+              <Fade in timeout={600}>
+                <Card
+                  onClick={() => setSelectedMatakuliah(matakuliah)}
+                  sx={{
+                    bgcolor: '#ffffff',
+                    border: '1px solid #e0e7ff',
+                    borderRadius: 3,
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
+                      transform: 'translateY(-4px)',
+                    },
+                    overflow: 'hidden',
+                  }}
+                >
+                  <CardContent sx={{ p: { xs: 2, md: 3 } }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                      <Box>
+                        <Typography
+                          variant="h6"
                           sx={{
-                            color: theme.accent,
-                            '&:hover': { bgcolor: 'rgba(77, 182, 172, 0.1)' },
+                            color: '#050D31',
+                            fontWeight: 600,
+                            fontSize: { xs: '1.25rem', md: '1.5rem' },
                           }}
                         >
-                          <EditIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Typography
-                        variant="body2"
-                        sx={{ color: theme.muted, fontWeight: 500, fontSize: '0.9rem' }}
-                      >
-                        Mahasiswa: {matakuliah.undangan_mahasiswas?.length || 0}
-                      </Typography>
-                      <Tooltip title="Lihat Mahasiswa">
-                        <IconButton
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleOpenViewModal(matakuliah);
-                          }}
-                          sx={{
-                            color: theme.accent,
-                            '&:hover': { bgcolor: 'rgba(77, 182, 172, 0.1)' },
-                          }}
-                        >
-                          <VisibilityIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Undang Mahasiswa">
-                        <IconButton
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleOpenInviteModal(matakuliah);
-                          }}
-                          sx={{
-                            color: theme.accent,
-                            '&:hover': { bgcolor: 'rgba(77, 182, 172, 0.1)' },
-                          }}
-                        >
-                          <GroupAddIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    </Box>
-                  </Box>
-                  <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-                    <Typography
-                      variant="body2"
-                      sx={{ color: theme.muted, fontSize: '0.9rem' }}
-                    >
-                      Kode: {matakuliah.kode}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{ color: theme.muted, fontSize: '0.9rem' }}
-                    >
-                      Semester {matakuliah.semester} | {matakuliah.sks} SKS
-                    </Typography>
-                  </Box>
-                  <Typography
-                    variant="body2"
-                    sx={{ color: theme.accent, fontWeight: 500, mb: 3, fontSize: '0.9rem' }}
-                  >
-                    Jumlah Pertemuan: {matakuliah.pertemuans?.length || 0}
-                  </Typography>
-                  <Collapse in={expandedCard === matakuliah.id} timeout={300}>
-                    <Typography
-                      variant="h6"
-                      sx={{ color: theme.text, fontWeight: 500, mb: 2, fontSize: '1.25rem' }}
-                    >
-                      Daftar Pertemuan dan Materi
-                    </Typography>
-                    {matakuliah.pertemuans?.length === 0 ? (
-                      <Typography sx={{ color: theme.muted, fontStyle: 'italic', fontSize: '0.9rem' }}>
-                        Belum ada pertemuan yang ditambahkan.
-                      </Typography>
-                    ) : (
-                      <List sx={{ mt: 1 }}>
-                        {matakuliah.pertemuans.map((pertemuan) => (
-                          <ListItem
-                            key={pertemuan.id}
+                          {matakuliah.nama}
+                        </Typography>
+                        <Box sx={{ display: 'flex', gap: 2, mt: 1, flexWrap: 'wrap' }}>
+                          <Chip
+                            label={`Kode: ${matakuliah.kode}`}
+                            size="small"
                             sx={{
-                              flexDirection: 'column',
-                              alignItems: 'flex-start',
-                              bgcolor: theme.secondary,
-                              border: `1px solid ${theme.border}`,
-                              borderRadius: '8px',
-                              mb: 2,
-                              p: 3,
-                              transition: 'all 0.2s ease',
-                              '&:hover': {
-                                bgcolor: '#f1f5f9',
-                                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
-                              },
+                              bgcolor: '#e0e7ff',
+                              color: '#050D31',
+                              fontWeight: 500,
+                              fontSize: '0.75rem',
+                            }}
+                          />
+                          <Chip
+                            label={`Semester: ${matakuliah.semester}`}
+                            size="small"
+                            sx={{
+                              bgcolor: '#e0e7ff',
+                              color: '#050D31',
+                              fontWeight: 500,
+                              fontSize: '0.75rem',
+                            }}
+                          />
+                          <Chip
+                            label={`${matakuliah.sks} SKS`}
+                            size="small"
+                            sx={{
+                              bgcolor: '#e0e7ff',
+                              color: '#050D31',
+                              fontWeight: 500,
+                              fontSize: '0.75rem',
+                            }}
+                          />
+                        </Box>
+                      </Box>
+                      <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Tooltip title="Edit Mata Kuliah">
+                          <IconButton
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenEditMatakuliahModal(matakuliah);
+                            }}
+                            sx={{
+                              color: '#4db6ac',
+                              '&:hover': { bgcolor: 'rgba(77, 182, 172, 0.1)' },
                             }}
                           >
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', mb: 2 }}>
-                              <ListItemText
-                                primary={`Pertemuan ${pertemuan.pertemuanKe}: ${pertemuan.topik}`}
-                                secondary={
-                                  pertemuan.tanggal
-                                    ? `Tanggal: ${new Date(pertemuan.tanggal).toLocaleDateString('id-ID', {
-                                        day: 'numeric',
-                                        month: 'long',
-                                        year: 'numeric',
-                                      })}`
-                                    : 'Tanggal: Belum ditentukan'
-                                }
-                                primaryTypographyProps={{
-                                  color: theme.text,
-                                  fontWeight: 500,
-                                  fontSize: '1.1rem',
-                                }}
-                                secondaryTypographyProps={{
-                                  color: theme.muted,
-                                  fontSize: '0.85rem',
-                                }}
-                              />
-                              <Box sx={{ display: 'flex', gap: 1 }}>
-                                <Tooltip title="Edit Pertemuan">
-                                  <IconButton
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleOpenEditPertemuanModal(matakuliah, pertemuan);
-                                    }}
-                                    sx={{
-                                      color: theme.accent,
-                                      '&:hover': { bgcolor: 'rgba(77, 182, 172, 0.1)' },
-                                    }}
-                                  >
-                                    <EditIcon fontSize="small" />
-                                  </IconButton>
-                                </Tooltip>
-                                <Tooltip title="Tambah Materi">
-                                  <IconButton
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleOpenMateriModal(matakuliah, pertemuan);
-                                    }}
-                                    sx={{
-                                      color: theme.accent,
-                                      '&:hover': { bgcolor: 'rgba(77, 182, 172, 0.1)' },
-                                    }}
-                                  >
-                                    <AddIcon fontSize="small" />
-                                  </IconButton>
-                                </Tooltip>
-                                <Tooltip title="Hapus Pertemuan">
-                                  <IconButton
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleOpenHapusPertemuanModal(matakuliah, pertemuan);
-                                    }}
-                                    sx={{
-                                      color: theme.error,
-                                      '&:hover': { bgcolor: 'rgba(211, 47, 47, 0.1)' },
-                                    }}
-                                  >
-                                    <DeleteIcon fontSize="small" />
-                                  </IconButton>
-                                </Tooltip>
-                              </Box>
-                            </Box>
-                            <Typography
-                              variant="subtitle2"
-                              sx={{ color: theme.text, mt: 1, mb: 2, fontWeight: 500, fontSize: '1rem' }}
+                            <EditIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Lihat Mahasiswa">
+                          <IconButton
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenViewModal(matakuliah);
+                            }}
+                            sx={{
+                              color: '#4db6ac',
+                              '&:hover': { bgcolor: 'rgba(77, 182, 172, 0.1)' },
+                            }}
+                          >
+                            <VisibilityIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Undang Mahasiswa">
+                          <IconButton
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenInviteModal(matakuliah);
+                            }}
+                            sx={{
+                              color: '#4db6ac',
+                              '&:hover': { bgcolor: 'rgba(77, 182, 172, 0.1)' },
+                            }}
+                          >
+                            <GroupAddIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
+                    </Box>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: '#64748b',
+                        fontSize: '0.875rem',
+                        mb: 2,
+                      }}
+                    >
+                      Jumlah Mahasiswa: {matakuliah.undangan_mahasiswas?.length || 0} | Jumlah Pertemuan: {matakuliah.pertemuans?.length || 0}
+                    </Typography>
+                    <Collapse in={expandedCard === matakuliah.id} timeout={300}>
+                      <Divider sx={{ my: 2, borderColor: '#e0e7ff' }} />
+                      <Typography
+                        variant="subtitle1"
+                        sx={{
+                          color: '#1a202c',
+                          fontWeight: 500,
+                          mb: 2,
+                          fontSize: '1.125rem',
+                        }}
+                      >
+                        Daftar Pertemuan
+                      </Typography>
+                      {matakuliah.pertemuans?.length === 0 ? (
+                        <Typography
+                          sx={{
+                            color: '#64748b',
+                            fontStyle: 'italic',
+                            fontSize: '0.875rem',
+                            textAlign: 'center',
+                            py: 2,
+                          }}
+                        >
+                          Belum ada pertemuan yang ditambahkan.
+                        </Typography>
+                      ) : (
+                        <List sx={{ mt: 1 }}>
+                          {matakuliah.pertemuans.map((pertemuan) => (
+                            <ListItem
+                              key={pertemuan.id}
+                              sx={{
+                                flexDirection: 'column',
+                                alignItems: 'flex-start',
+                                bgcolor: '#f8fafc',
+                                border: '1px solid #e0e7ff',
+                                borderRadius: 2,
+                                mb: 2,
+                                p: 2,
+                                transition: 'all 0.2s ease',
+                                '&:hover': {
+                                  bgcolor: '#f1f5f9',
+                                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
+                                },
+                              }}
                             >
-                              Materi:
-                            </Typography>
-                            {!pertemuan.materis || pertemuan.materis.length === 0 ? (
-                              <Typography sx={{ color: theme.muted, fontStyle: 'italic', ml: 2, fontSize: '0.9rem' }}>
-                                Belum ada materi yang ditambahkan.
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', mb: 1 }}>
+                                <ListItemText
+                                  primary={`Pertemuan ${pertemuan.pertemuanKe}: ${pertemuan.topik}`}
+                                  secondary={
+                                    pertemuan.tanggal
+                                      ? `Tanggal: ${new Date(pertemuan.tanggal).toLocaleDateString('id-ID', {
+                                          day: 'numeric',
+                                          month: 'long',
+                                          year: 'numeric',
+                                        })}`
+                                      : 'Tanggal: Belum ditentukan'
+                                  }
+                                  primaryTypographyProps={{
+                                    color: '#1a202c',
+                                    fontWeight: 500,
+                                    fontSize: '1rem',
+                                  }}
+                                  secondaryTypographyProps={{
+                                    color: '#64748b',
+                                    fontSize: '0.75rem',
+                                  }}
+                                />
+                                <Box sx={{ display: 'flex', gap: 1 }}>
+                                  <Tooltip title="Edit Pertemuan">
+                                    <IconButton
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleOpenEditPertemuanModal(matakuliah, pertemuan);
+                                      }}
+                                      sx={{
+                                        color: '#4db6ac',
+                                        '&:hover': { bgcolor: 'rgba(77, 182, 172, 0.1)' },
+                                      }}
+                                    >
+                                      <EditIcon fontSize="small" />
+                                    </IconButton>
+                                  </Tooltip>
+                                  <Tooltip title="Tambah Materi">
+                                    <IconButton
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleOpenMateriModal(matakuliah, pertemuan);
+                                      }}
+                                      sx={{
+                                        color: '#4db6ac',
+                                        '&:hover': { bgcolor: 'rgba(77, 182, 172, 0.1)' },
+                                      }}
+                                    >
+                                      <AddIcon fontSize="small" />
+                                    </IconButton>
+                                  </Tooltip>
+                                  <Tooltip title="Tambah Kuis">
+                                    <IconButton
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleOpenKuisModal(matakuliah, pertemuan);
+                                      }}
+                                      sx={{
+                                        color: '#4db6ac',
+                                        '&:hover': { bgcolor: 'rgba(77, 182, 172, 0.1)' },
+                                      }}
+                                    >
+                                      <QuizIcon fontSize="small" />
+                                    </IconButton>
+                                  </Tooltip>
+                                  <Tooltip title="Hapus Pertemuan">
+                                    <IconButton
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleOpenHapusPertemuanModal(matakuliah, pertemuan);
+                                      }}
+                                      sx={{
+                                        color: '#d32f2f',
+                                        '&:hover': { bgcolor: 'rgba(211, 47, 47, 0.1)' },
+                                      }}
+                                    >
+                                      <DeleteIcon fontSize="small" />
+                                    </IconButton>
+                                  </Tooltip>
+                                </Box>
+                              </Box>
+                              <Typography
+                                variant="subtitle2"
+                                sx={{
+                                  color: '#1a202c',
+                                  mt: 1,
+                                  mb: 1,
+                                  fontWeight: 500,
+                                  fontSize: '0.875rem',
+                                }}
+                              >
+                                Materi:
                               </Typography>
-                            ) : (
-                              pertemuan.materis.map((materi) => (
-                                <Box
-                                  key={materi.id}
+                              {!pertemuan.materis || pertemuan.materis.length === 0 ? (
+                                <Typography
                                   sx={{
-                                    width: '95%',
-                                    mb: 2,
-                                    bgcolor: '#ffffff',
-                                    p: 3,
-                                    borderRadius: '8px',
-                                    border: `1px solid ${theme.border}`,
-                                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+                                    color: '#64748b',
+                                    fontStyle: 'italic',
+                                    ml: 2,
+                                    fontSize: '0.75rem',
                                   }}
                                 >
-                                  <Grid container spacing={2}>
-                                    <Grid item xs={12} md={6}>
-                                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                                        <Typography
-                                          variant="body1"
-                                          sx={{ color: theme.text, fontWeight: 600, fontSize: '1rem' }}
-                                        >
-                                          {materi.judul}
-                                        </Typography>
-                                        <Tooltip title="Hapus Materi">
-                                          <IconButton
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              handleOpenHapusMateriModal(matakuliah, pertemuan, materi);
-                                            }}
-                                            sx={{
-                                              color: theme.error,
-                                              '&:hover': { bgcolor: 'rgba(211, 47, 47, 0.1)' },
-                                            }}
-                                          >
-                                            <DeleteIcon fontSize="small" />
-                                          </IconButton>
-                                        </Tooltip>
-                                      </Box>
-                                      <Typography
-                                        variant="subtitle2"
-                                        sx={{ color: theme.text, fontWeight: 500, mb: 1, fontSize: '0.9rem' }}
-                                      >
-                                        Deskripsi:
-                                      </Typography>
-                                      <Typography
-                                        variant="body2"
-                                        sx={{ color: theme.muted, mb: 2, fontSize: '0.85rem' }}
-                                      >
-                                        {truncateDeskripsi(materi.deskripsi?.[0]?.children?.[0]?.text)}
-                                      </Typography>
-                                      <Divider sx={{ mb: 2, borderColor: theme.border }} />
-                                      <Typography
-                                        variant="subtitle2"
-                                        sx={{ color: theme.text, fontWeight: 500, mb: 1, fontSize: '0.9rem' }}
-                                      >
-                                        Isi Materi:
-                                      </Typography>
-                                      {renderTiptapContent(materi.isiTeks?.content)}
-                                      {materi.fileUrl && materi.fileUrl.length > 0 && (
-                                        <Box sx={{ mt: 2 }}>
+                                  Belum ada materi yang ditambahkan.
+                                </Typography>
+                              ) : (
+                                pertemuan.materis.map((materi) => (
+                                  <Box
+                                    key={materi.id}
+                                    sx={{
+                                      width: '95%',
+                                      mb: 1,
+                                      bgcolor: '#ffffff',
+                                      p: 2,
+                                      borderRadius: 2,
+                                      border: '1px solid #e0e7ff',
+                                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+                                    }}
+                                  >
+                                    <Grid container spacing={2}>
+                                      <Grid item xs={12} md={8}>
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                                           <Typography
-                                            variant="subtitle2"
-                                            sx={{ color: theme.text, fontWeight: 500, mb: 1, fontSize: '0.9rem' }}
+                                            variant="body1"
+                                            sx={{
+                                              color: '#1a202c',
+                                              fontWeight: 600,
+                                              fontSize: '0.875rem',
+                                            }}
                                           >
-                                            Gambar:
+                                            {materi.judul}
                                           </Typography>
-                                          <img
-                                            src={`http://localhost:1337${materi.fileUrl[0].url}`}
-                                            alt={materi.fileUrl[0].name || 'Materi Image'}
+                                          <Tooltip title="Hapus Materi">
+                                            <IconButton
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleOpenHapusMateriModal(matakuliah, pertemuan, materi);
+                                              }}
+                                              sx={{
+                                                color: '#d32f2f',
+                                                '&:hover': { bgcolor: 'rgba(211, 47, 47, 0.1)' },
+                                              }}
+                                            >
+                                              <DeleteIcon fontSize="small" />
+                                            </IconButton>
+                                          </Tooltip>
+                                        </Box>
+                                        <Typography
+                                          variant="body2"
+                                          sx={{
+                                            color: '#64748b',
+                                            mb: 1,
+                                            fontSize: '0.75rem',
+                                          }}
+                                        >
+                                          {truncateDeskripsi(materi.deskripsi?.[0]?.children?.[0]?.text)}
+                                        </Typography>
+                                        {materi.isiTeks?.content && (
+                                          <>
+                                            <Typography
+                                              variant="subtitle2"
+                                              sx={{
+                                                color: '#1a202c',
+                                                fontWeight: 500,
+                                                mb: 1,
+                                                fontSize: '0.75rem',
+                                              }}
+                                            >
+                                              Isi Materi:
+                                            </Typography>
+                                            {renderTiptapContent(materi.isiTeks?.content)}
+                                          </>
+                                        )}
+                                        {materi.fileUrl && materi.fileUrl.length > 0 && (
+                                          <Box sx={{ mt: 1 }}>
+                                            <Typography
+                                              variant="subtitle2"
+                                              sx={{
+                                                color: '#1a202c',
+                                                fontWeight: 500,
+                                                mb: 1,
+                                                fontSize: '0.75rem',
+                                              }}
+                                            >
+                                              Gambar:
+                                            </Typography>
+                                            <img
+                                              src={`http://localhost:1337${materi.fileUrl[0].url}`}
+                                              alt={materi.fileUrl[0].name || 'Materi Image'}
+                                              style={{
+                                                maxWidth: '100%',
+                                                maxHeight: '150px',
+                                                objectFit: 'contain',
+                                                borderRadius: '8px',
+                                                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                                              }}
+                                            />
+                                          </Box>
+                                        )}
+                                        {materi.documentUrl && materi.documentUrl.length > 0 && (
+                                          <Box sx={{ mt: 1 }}>
+                                            <Button
+                                              variant="outlined"
+                                              href={`http://localhost:1337${materi.documentUrl[0].url}`}
+                                              download={materi.documentUrl[0].name}
+                                              size="small"
+                                              sx={{
+                                                textTransform: 'none',
+                                                color: '#4db6ac',
+                                                borderColor: '#4db6ac',
+                                                fontSize: '0.75rem',
+                                                '&:hover': {
+                                                  bgcolor: 'rgba(77, 182, 172, 0.1)',
+                                                  borderColor: '#4db6ac',
+                                                },
+                                              }}
+                                            >
+                                              Unduh {materi.documentUrl[0].name}
+                                            </Button>
+                                          </Box>
+                                        )}
+                                      </Grid>
+                                      <Grid item xs={12} md={4} sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                                        {materi.videoYoutubeUrl ? (
+                                          <iframe
+                                            width="100%"
+                                            height="120"
+                                            src={materi.videoYoutubeUrl.replace('youtu.be/', 'www.youtube.com/embed/').split('?')[0]}
+                                            title={materi.judul}
+                                            frameBorder="0"
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                            allowFullScreen
                                             style={{
-                                              maxWidth: '100%',
-                                              maxHeight: '200px',
-                                              objectFit: 'contain',
                                               borderRadius: '8px',
+                                              maxWidth: '200px',
                                               boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
                                             }}
                                           />
-                                        </Box>
-                                      )}
-                                      {materi.documentUrl && materi.documentUrl.length > 0 && (
-                                        <Typography variant="body2" sx={{ color: theme.accent, fontSize: '0.85rem', mt: 2 }}>
-                                          Dokumen:{' '}
-                                          <Button
-                                            variant="outlined"
-                                            href={`http://localhost:1337${materi.documentUrl[0].url}`}
-                                            download={materi.documentUrl[0].name}
+                                        ) : (
+                                          <Typography
                                             sx={{
-                                              textTransform: 'none',
-                                              color: theme.accent,
-                                              borderColor: theme.accent,
-                                              fontSize: '0.85rem',
-                                              '&:hover': {
-                                                bgcolor: 'rgba(77, 182, 172, 0.1)',
-                                                borderColor: theme.accent,
-                                              },
+                                              color: '#64748b',
+                                              textAlign: 'center',
+                                              fontStyle: 'italic',
+                                              fontSize: '0.75rem',
                                             }}
                                           >
-                                            Unduh {materi.documentUrl[0].name}
-                                          </Button>
-                                        </Typography>
-                                      )}
+                                            Tidak ada video tersedia.
+                                          </Typography>
+                                        )}
+                                      </Grid>
                                     </Grid>
-                                    <Grid item xs={12} md={6} sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                                      {materi.videoYoutubeUrl ? (
-                                        <iframe
-                                          width="100%"
-                                          height="140"
-                                          src={materi.videoYoutubeUrl.replace('youtu.be/', 'www.youtube.com/embed/').split('?')[0]}
-                                          title={materi.judul}
-                                          frameBorder="0"
-                                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                          allowFullScreen
-                                          style={{
-                                            borderRadius: '8px',
-                                            maxWidth: '250px',
-                                            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                                  </Box>
+                                ))
+                              )}
+                              <Typography
+                                variant="subtitle2"
+                                sx={{
+                                  color: '#1a202c',
+                                  mt: 2,
+                                  mb: 1,
+                                  fontWeight: 500,
+                                  fontSize: '0.875rem',
+                                }}
+                              >
+                                Kuis:
+                              </Typography>
+                              {!pertemuan.kuises || pertemuan.kuises.length === 0 ? (
+                                <Typography
+                                  sx={{
+                                    color: '#64748b',
+                                    fontStyle: 'italic',
+                                    ml: 2,
+                                    fontSize: '0.75rem',
+                                  }}
+                                >
+                                  Belum ada kuis yang ditambahkan.
+                                </Typography>
+                              ) : (
+                                pertemuan.kuises.map((kuis) => (
+                                  <Box
+                                    key={kuis.id}
+                                    sx={{
+                                      width: '95%',
+                                      mb: 1,
+                                      bgcolor: '#ffffff',
+                                      p: 2,
+                                      borderRadius: 2,
+                                      border: '1px solid #e0e7ff',
+                                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+                                    }}
+                                  >
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                                      <Typography
+                                        variant="body1"
+                                        sx={{
+                                          color: '#1a202c',
+                                          fontWeight: 600,
+                                          fontSize: '0.875rem',
+                                        }}
+                                      >
+                                        Kuis: {kuis.jenis.charAt(0).toUpperCase() + kuis.jenis.slice(1).replace('_', ' ')}
+                                      </Typography>
+                                      <Tooltip title="Hapus Kuis">
+                                        <IconButton
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleOpenHapusKuisModal(matakuliah, pertemuan, kuis);
                                           }}
-                                        />
-                                      ) : (
-                                        <Typography sx={{ color: theme.muted, textAlign: 'center', fontStyle: 'italic', fontSize: '0.9rem' }}>
-                                          Tidak ada video tersedia.
-                                        </Typography>
-                                      )}
-                                    </Grid>
-                                  </Grid>
-                                </Box>
-                              ))
-                            )}
-                          </ListItem>
-                        ))}
-                      </List>
-                    )}
-                  </Collapse>
-                </CardContent>
-                <CardActions sx={{ p: 3, bgcolor: theme.secondary, justifyContent: 'space-between', borderRadius: '0 0 12px 12px' }}>
-                  <Button
-                    variant="outlined"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleExpandCard(matakuliah.id);
-                    }}
-                    endIcon={<ExpandMoreIcon sx={{ transform: expandedCard === matakuliah.id ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s' }} />}
-                    sx={{
-                      textTransform: 'none',
-                      fontWeight: 500,
-                      borderColor: theme.accent,
-                      color: theme.accent,
-                      px: 3,
-                      py: 1,
-                      fontSize: '0.9rem',
-                      '&:hover': {
-                        bgcolor: 'rgba(77, 182, 172, 0.1)',
-                        borderColor: theme.accent,
-                      },
-                      '&:focus': {
-                        boxShadow: `0 0 0 3px rgba(77, 182, 172, 0.2)`,
-                      },
-                    }}
-                  >
-                    {expandedCard === matakuliah.id ? 'Sembunyikan Detail' : 'Lihat Selengkapnya'}
-                  </Button>
-                  <Button
-                    variant="contained"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleOpenPertemuanModal(matakuliah);
-                    }}
-                    sx={{
-                      bgcolor: theme.primary,
-                      color: '#ffffff',
-                      textTransform: 'none',
-                      fontWeight: 500,
-                      px: 3,
-                      py: 1,
-                      fontSize: '0.9rem',
-                      '&:hover': {
-                        bgcolor: theme.hover,
-                        boxShadow: '0 4px 12px rgba(0, 90, 111, 0.3)',
-                      },
-                      '&:focus': {
-                        boxShadow: `0 0 0 3px rgba(0, 90, 111, 0.2)`,
-                      },
-                    }}
-                  >
-                    Tambah Pertemuan
-                  </Button>
-                </CardActions>
-              </Card>
+                                          sx={{
+                                            color: '#d32f2f',
+                                            '&:hover': { bgcolor: 'rgba(211, 47, 47, 0.1)' },
+                                          }}
+                                        >
+                                          <DeleteIcon fontSize="small" />
+                                        </IconButton>
+                                      </Tooltip>
+                                    </Box>
+                                    {kuis.instruksi && (
+                                      <Typography
+                                        variant="body2"
+                                        sx={{
+                                          color: '#64748b',
+                                          mb: 1,
+                                          fontSize: '0.75rem',
+                                        }}
+                                      >
+                                        Instruksi: {truncateDeskripsi(kuis.instruksi?.[0]?.children?.[0]?.text)}
+                                      </Typography>
+                                    )}
+                                    <Typography
+                                      variant="body2"
+                                      sx={{
+                                        color: '#64748b',
+                                        fontSize: '0.75rem',
+                                      }}
+                                    >
+                                      Waktu: {new Date(kuis.waktuMulai).toLocaleString('id-ID')} -{' '}
+                                      {new Date(kuis.waktuSelesai).toLocaleString('id-ID')}
+                                    </Typography>
+                                    {kuis.timer && (
+                                      <Typography
+                                        variant="body2"
+                                        sx={{
+                                          color: '#64748b',
+                                          fontSize: '0.75rem',
+                                        }}
+                                      >
+                                        Durasi: {kuis.timer}
+                                      </Typography>
+                                    )}
+                                  </Box>
+                                ))
+                              )}
+                            </ListItem>
+                          ))}
+                        </List>
+                      )}
+                    </Collapse>
+                  </CardContent>
+                  <CardActions sx={{ p: 2, bgcolor: '#f8fafc', justifyContent: 'space-between', borderRadius: '0 0 12px 12px' }}>
+                    <Button
+                      variant="outlined"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleExpandCard(matakuliah.id);
+                      }}
+                      endIcon={<ExpandMoreIcon sx={{ transform: expandedCard === matakuliah.id ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s' }} />}
+                      sx={{
+                        textTransform: 'none',
+                        fontWeight: 500,
+                        borderColor: '#4db6ac',
+                        color: '#4db6ac',
+                        px: 3,
+                        py: 1,
+                        fontSize: '0.875rem',
+                        borderRadius: 2,
+                        '&:hover': {
+                          bgcolor: 'rgba(77, 182, 172, 0.1)',
+                          borderColor: '#4db6ac',
+                        },
+                      }}
+                    >
+                      {expandedCard === matakuliah.id ? 'Sembunyikan Detail' : 'Lihat Detail'}
+                    </Button>
+                    <Button
+                      variant="contained"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenPertemuanModal(matakuliah);
+                      }}
+                      startIcon={<AddIcon />}
+                      sx={{
+                        bgcolor: '#050D31',
+                        color: '#ffffff',
+                        textTransform: 'none',
+                        fontWeight: 600,
+                        px: 3,
+                        py: 1,
+                        fontSize: '0.875rem',
+                        borderRadius: 2,
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                          bgcolor: '#0A1A5C',
+                          boxShadow: '0 6px 16px rgba(0, 0, 0, 0.2)',
+                          transform: 'translateY(-2px)',
+                        },
+                      }}
+                    >
+                      Tambah Pertemuan
+                    </Button>
+                  </CardActions>
+                </Card>
+              </Fade>
             </Grid>
           ))}
         </Grid>
@@ -776,6 +992,17 @@ const CourseAccordion = ({ matakuliahList, setSelectedMatakuliah, refreshMatakul
         open={openMateriModal}
         onClose={() => {
           setOpenMateriModal(false);
+          setSelectedMatakuliahForModal(null);
+          setSelectedPertemuan(null);
+        }}
+        matakuliah={selectedMatakuliahForModal}
+        pertemuan={selectedPertemuan}
+        refreshMatakuliah={refreshMatakuliah}
+      />
+      <AddKuisModal
+        open={openKuisModal}
+        onClose={() => {
+          setOpenKuisModal(false);
           setSelectedMatakuliahForModal(null);
           setSelectedPertemuan(null);
         }}
@@ -825,6 +1052,19 @@ const CourseAccordion = ({ matakuliahList, setSelectedMatakuliah, refreshMatakul
         matakuliah={selectedMatakuliahForModal}
         pertemuan={selectedPertemuan}
         materi={selectedMateri}
+        refreshMatakuliah={refreshMatakuliah}
+      />
+      <HapusKuisModal
+        open={openHapusKuisModal}
+        onClose={() => {
+          setOpenHapusKuisModal(false);
+          setSelectedMatakuliahForModal(null);
+          setSelectedPertemuan(null);
+          setSelectedKuis(null);
+        }}
+        matakuliah={selectedMatakuliahForModal}
+        pertemuan={selectedPertemuan}
+        kuis={selectedKuis}
         refreshMatakuliah={refreshMatakuliah}
       />
     </Box>

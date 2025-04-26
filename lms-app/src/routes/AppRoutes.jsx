@@ -16,6 +16,7 @@ import DashboardMahasiswa from '../pages/mahasiswa/DashboardMahasiswa';
 import EnrolledCourses from '../pages/mahasiswa/pages/EnrolledCourses';
 import CourseDetail from '../pages/mahasiswa/pages/CourseDetail';
 import MeetingDetail from '../pages/mahasiswa/components/MeetingDetail';
+import QuizDetail from '../pages/mahasiswa/components/QuizDetail';
 import Assignments from '../pages/mahasiswa/pages/Assignments';
 import DosenLayout from '../layouts/DosenLayout';
 import MahasiswaLayout from '../layouts/MahasiswaLayout';
@@ -66,6 +67,7 @@ const AppRoutes = () => {
         <Route path="courses" element={<EnrolledCourses />} />
         <Route path="courses/:code" element={<CourseDetail />}>
           <Route path="pertemuan/:meetingNumber" element={<MeetingDetail />} />
+          <Route path="pertemuan/:meetingNumber/quiz/:quizId" element={<QuizDetail />} />
         </Route>
         <Route path="assignments" element={<Assignments />} />
       </Route>

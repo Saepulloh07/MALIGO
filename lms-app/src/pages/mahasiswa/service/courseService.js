@@ -90,6 +90,14 @@ export const fetchCourseDetail = async (courseCode, nim) => {
     const progressData = await progressResponse.json();
     console.log('Progress API response:', JSON.stringify(progressData, null, 2));
 
+    // Modified quizzes fetch
+    const quizzesResponse = await fetch('http://localhost:1337/api/kuises?populate[0]=soal_kuis&populate[1]=pertemuan');
+    if (!quizzesResponse.ok) {
+      throw new Error(`Failed to fetch quizzes: ${quizzesResponse.statusText}`);
+    }
+    const quizzesData = await quizzesResponse.json();
+    console.log('Quizzes API response:', JSON.stringify(quizzesData, null, 2));
+
     const sortedMeetings = course.pertemuans.sort((a, b) => a.pertemuanKe - b.pertemuanKe);
 
     const result = {
@@ -185,12 +193,40 @@ export const fetchCourseDetail = async (courseCode, nim) => {
         ).length;
         const progressPercentage = totalMaterials > 0 ? (openedMaterials / totalMaterials) * 100 : 0;
 
+        const meetingQuizzes = quizzesData.data
+          .filter((quiz) => quiz.pertemuan && quiz.pertemuan.id === meeting.id)
+          .map((quiz) => ({
+            id: quiz.id,
+            documentId: quiz.documentId,
+            instructions: quiz.instruksi || [],
+            type: quiz.jenis,
+            startTime: quiz.waktuMulai,
+            endTime: quiz.waktuSelesai,
+            timer: quiz.timer,
+            questions: quiz.soal_kuis
+              ? quiz.soal_kuis.map((soal) => ({
+                  id: soal.id,
+                  documentId: soal.documentId,
+                  question: soal.pertanyaan,
+                  type: soal.jenis,
+                  options: soal.pilihan
+                    ? soal.pilihan.map((option) =>
+                        option.children.map((child) => child.text).join('')
+                      )
+                    : null,
+                  correctAnswer: soal.jawabanBenar,
+                  weight: soal.bobot,
+                }))
+              : [],
+          }));
+
         return {
           id: meeting.id,
           meetingNumber: meeting.pertemuanKe,
           topic: meeting.topik.trim(),
           date: meeting.tanggal,
           materials: meetingMaterials,
+          quizzes: meetingQuizzes,
           progress: meetingProgress.length > 0
             ? meetingProgress.map((p) => ({
                 id: p.id,

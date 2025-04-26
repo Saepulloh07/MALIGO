@@ -15,10 +15,11 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  Chip,
   keyframes,
 } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
-import { School, Lock, LockOpen } from '@mui/icons-material';
+import { School, Lock, LockOpen, Quiz as QuizIcon } from '@mui/icons-material';
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 import theme from '../styles/theme';
@@ -236,7 +237,24 @@ const CourseDetail = () => {
                                 )}
                               </ListItemIcon>
                               <ListItemText
-                                primary={`Pertemuan ${meeting.meetingNumber}: ${meeting.topic}`}
+                                primary={
+                                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                    {`Pertemuan ${meeting.meetingNumber}: ${meeting.topic}`}
+                                    {meeting.quizzes && meeting.quizzes.length > 0 && (
+                                      <Chip
+                                        icon={<QuizIcon />}
+                                        label={`${meeting.quizzes.length} Kuis`}
+                                        size="small"
+                                        sx={{
+                                          ml: 1,
+                                          bgcolor: '#efbf04',
+                                          color: '#050D31',
+                                          fontSize: '0.75rem',
+                                        }}
+                                      />
+                                    )}
+                                  </Box>
+                                }
                                 secondary={`Progres: ${meeting.progressPercentage}%`}
                                 primaryTypographyProps={{
                                   sx: { color: '#FFFFFF', fontFamily: '"Orbitron", sans-serif' },

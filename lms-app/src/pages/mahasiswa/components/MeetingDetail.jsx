@@ -14,9 +14,13 @@ import {
   Link,
   Modal,
   Grid,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
 } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
-import { VideoLibrary, Description, Visibility, CheckCircle } from '@mui/icons-material';
+import { VideoLibrary, Description, Visibility, CheckCircle, Quiz as QuizIcon } from '@mui/icons-material';
 import theme from '../styles/theme';
 import { saveProgress, fetchCourseDetail } from '../service/courseService';
 
@@ -33,7 +37,6 @@ const renderTextContent = (text) => {
   console.log('Rendering textContent:', text);
   const lines = text.split('\n');
   return lines.map((line, index) => {
-    // Updated regex to match [IMAGE:<src>|<alt>|<title>]
     const parts = line.split(/(\*\*.*?\*\*|\[.*?\]\(.*?\)|\[IMAGE:[^\]]*?\])/g).filter(Boolean);
     console.log(`Line ${index} parts:`, parts);
     return (
@@ -63,7 +66,6 @@ const renderTextContent = (text) => {
             }
           }
           if (part.startsWith('[IMAGE:')) {
-            // Match [IMAGE:<src>|<alt>|<title>]
             const match = part.match(/\[IMAGE:([^|]*)\|([^|]*)\|([^|]*)\]/);
             console.log(`Image part ${i}:`, part, 'Match:', match);
             if (match) {
@@ -82,7 +84,7 @@ const renderTextContent = (text) => {
                     borderRadius: '8px',
                     border: '2px solid #efbf04',
                     margin: '8px 0',
-                    display: 'block', // Ensure image is on its own line
+                    display: 'block',
                   }}
                 />
               );
@@ -116,7 +118,7 @@ const getYouTubeEmbedUrl = (url) => {
         return `https://www.youtube.com/embed/${videoId}`;
       }
     }
-    return null; // Invalid or non-YouTube URL
+    return null;
   } catch (error) {
     console.error('Error parsing YouTube URL:', error.message);
     return null;
@@ -143,13 +145,11 @@ const MeetingDetail = () => {
       if (selectedMeeting) {
         console.log('Selected meeting:', JSON.stringify(selectedMeeting, null, 2));
         setMeeting(selectedMeeting);
-        // Initialize completeButtonEnabled based on word count delay
         selectedMeeting.materials.forEach((material) => {
           console.log('Material:', JSON.stringify(material, null, 2));
           const wordCount = countWords(material.textContent);
-          const delay = wordCount * 50; // 50ms per word
+          const delay = wordCount * 50;
           if (!material.videoUrl) {
-            // No video: enable after delay
             setTimeout(() => {
               setCompleteButtonEnabled((prev) => ({
                 ...prev,
@@ -178,7 +178,6 @@ const MeetingDetail = () => {
       [materialId]: true,
     }));
     setOpenVideoModal(materialId);
-    // Enable Tandai Selesai after word count delay
     const material = meeting.materials.find((m) => m.id === materialId);
     const wordCount = countWords(material.textContent);
     const delay = wordCount * 50;
@@ -218,7 +217,7 @@ const MeetingDetail = () => {
     const targetIndex = direction === 'next' ? currentMeetingIndex + 1 : currentMeetingIndex - 1;
     if (targetIndex >= 0 && targetIndex < course.meetings.length) {
       const targetMeeting = course.meetings[targetIndex];
-      const isUnlocked = currentMeetingIndex === 0 || // First meeting is always unlocked
+      const isUnlocked = currentMeetingIndex === 0 ||
         (direction === 'next' &&
           course.meetings[currentMeetingIndex].materials.every((material) =>
             course.meetings[currentMeetingIndex].progress.some(
@@ -230,12 +229,22 @@ const MeetingDetail = () => {
         const targetUrl = `/mahasiswa/courses/${code}/pertemuan/${targetMeeting.meetingNumber}`;
         navigate(targetUrl);
         if (direction === 'next') {
-          window.location.reload(); // Refresh page after navigating to next meeting
+          window.location.reload();
         }
       } else {
         setError('Selesaikan semua materi pada pertemuan ini terlebih dahulu.');
       }
     }
+  };
+
+  const isQuizUnlocked = (index) => {
+    if (index === 0) return true;
+    const previousMeeting = course.meetings[index - 1];
+    return previousMeeting.materials.every((material) =>
+      previousMeeting.progress.some(
+        (p) => p.materialId === material.id && p.status === 'selesai'
+      )
+    );
   };
 
   if (error) {
@@ -257,6 +266,10 @@ const MeetingDetail = () => {
       </ThemeProvider>
     );
   }
+
+  const currentMeetingIndex = course.meetings.findIndex(
+    (m) => m.meetingNumber === parseInt(meetingNumber)
+  );
 
   return (
     <ThemeProvider theme={theme}>
@@ -418,7 +431,7 @@ const MeetingDetail = () => {
                               {material.title}
                             </Typography>
                             {embedUrl ? (
-                              <Box sx={{ position: 'relative', paddingTop: '56.25%' /* 16:9 aspect ratio */ }}>
+                              <Box sx={{ position: 'relative', paddingTop: '56.25%' }}>
                                 <iframe
                                   src={embedUrl}
                                   title={material.title}
@@ -467,7 +480,7 @@ const MeetingDetail = () => {
                         {console.log('Rendering fileUrl images:', material.fileUrl)}
                         <Grid container spacing={2}>
                           {material.fileUrl.map((file) => (
-                            <Grid item xs={12} sm={6} md={4} key={file.id}>
+                            <Grid item xs={12} sm={6} md= {4} key={file.id}>
                               <img
                                 src={file.url}
                                 alt={file.name}
@@ -555,6 +568,64 @@ const MeetingDetail = () => {
               </Card>
             );
           })
+        )}
+        {/* Quizzes Section */}
+        <Divider sx={{ bgcolor: 'rgba(239, 191, 4, 0.3)', mb: 2, mt: 4 }} />
+        <Typography
+          variant="h5"
+          sx={{ mb: 2, color: '#FFFFFF', fontFamily: '"Orbitron", sans-serif' }}
+        >
+          Kuis
+        </Typography>
+        {meeting.quizzes.length === 0 ? (
+          <Typography variant="body2" sx={{ color: '#FFFFFF', opacity: 0.7 }}>
+            Tidak ada kuis untuk pertemuan ini.
+          </Typography>
+        ) : (
+          <List>
+            {meeting.quizzes.map((quiz) => {
+              const now = new Date();
+              const startTime = new Date(quiz.startTime);
+              const endTime = new Date(quiz.endTime);
+              const isQuizAvailable = now >= startTime && now <= endTime;
+              const isUnlocked = isQuizUnlocked(currentMeetingIndex);
+              return (
+                <ListItem key={quiz.id} sx={{ bgcolor: 'rgba(239, 191, 4, 0.05)', mb: 1, borderRadius: 2 }}>
+                  <ListItemText
+                    primary={quiz.instructions[0]?.children[0]?.text || 'Kuis Tanpa Nama'}
+                    secondary={`Jenis: ${quiz.type === 'multiple_choice' ? 'Pilihan Ganda' : quiz.type === 'esai' ? 'Esai' : 'Tugas'} | Mulai: ${startTime.toLocaleString('id-ID')} | Selesai: ${endTime.toLocaleString('id-ID')}`}
+                    primaryTypographyProps={{
+                      sx: { color: '#FFFFFF', fontFamily: '"Orbitron", sans-serif' },
+                    }}
+                    secondaryTypographyProps={{ sx: { color: '#efbf04', opacity: 0.7 } }}
+                  />
+                  <Button
+                    variant="contained"
+                    startIcon={<QuizIcon />}
+                    disabled={!isUnlocked || !isQuizAvailable}
+                    sx={{
+                      bgcolor: '#efbf04',
+                      color: '#050D31',
+                      borderRadius: 20,
+                      '&:hover': {
+                        bgcolor: '#d4a703',
+                        animation: `${neonGlow} 1.5s infinite`,
+                      },
+                      '&.Mui-disabled': {
+                        bgcolor: 'rgba(239, 191, 4, 0.3)',
+                        color: '#050D31',
+                      },
+                    }}
+                    onClick={() =>
+                      navigate(`/mahasiswa/courses/${code}/pertemuan/${meetingNumber}/quiz/${quiz.id}`)
+                    }
+                  >
+                    Kerjakan Kuis
+                  </Button>
+                </ListItem>
+              );
+            })}
+          </List>
         )}
         {/* Navigation Buttons */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
