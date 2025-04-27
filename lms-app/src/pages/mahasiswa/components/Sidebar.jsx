@@ -12,7 +12,7 @@ import {
   Typography,
   IconButton,
 } from '@mui/material';
-import { Dashboard, School, People, Person, ExitToApp, Menu } from '@mui/icons-material';
+import { Dashboard, School, People, Person, ExitToApp, Menu, Assignment } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { logoutUser } from '../../../services/AuthService';
 
@@ -23,6 +23,7 @@ const Sidebar = ({ open, handleDrawerToggle, role }) => {
     { text: 'Dashboard', icon: <Dashboard />, path: `/${role}` },
     { text: 'Mata Kuliah', icon: <School />, path: `/${role}/courses` },
     { text: 'Kemajuan', icon: <People />, path: `/${role}/progress` },
+    { text: 'Ujian', icon: <Assignment />, path: `/${role}/exams` },
     { text: 'Profil', icon: <Person />, path: `/${role}/profile` },
   ];
 

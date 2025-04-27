@@ -299,34 +299,41 @@ const AddPertemuanModal = ({ open, onClose, matakuliah, refreshMatakuliah }) => 
                         label="Tanggal dan Waktu"
                         value={formData.tanggal}
                         onChange={handleTanggalChange}
-                        renderInput={(params) => (
-                          <TextField
-                            {...params}
-                            fullWidth
-                            required
-                            error={!!errors.tanggal}
-                            helperText={errors.tanggal || 'Pilih tanggal dan waktu pertemuan'}
-                            InputProps={{
-                              ...params.InputProps,
+                        minDateTime={new Date()}
+                        slotProps={{
+                          actionBar: {
+                            actions: ['cancel', 'accept'],
+                            sx: {
+                              '& .MuiButton-root': {
+                                color: 'white', // Ubah warna teks tombol ke putih
+                              },
+                            },
+                          },
+                          textField: {
+                            fullWidth: true,
+                            required: true,
+                            error: !!errors.tanggal,
+                            helperText: errors.tanggal || 'Pilih tanggal dan waktu pertemuan',
+                            InputProps: {
                               startAdornment: (
                                 <InputAdornment position="start">
                                   <CalendarIcon sx={{ color: theme.primary }} />
                                 </InputAdornment>
                               ),
-                            }}
-                            sx={{
+                            },
+                            sx: {
                               '& .MuiOutlinedInput-root': {
                                 '&:hover fieldset': { borderColor: theme.primary },
                                 '&.Mui-focused fieldset': { borderColor: theme.primary },
                               },
-                              input: { color: theme.text },
-                            }}
-                          />
-                        )}
-                        minDateTime={new Date()}
+                              input: { color: 'rgb(4, 25, 46)' },
+                            },
+                          },
+                        }}
                       />
                     </Box>
                   </Grid>
+
 
                   <Grid item xs={12} md={6}>
                     <Typography variant="subtitle1" sx={{ mb: 1, color: theme.text, fontWeight: 500 }}>
@@ -386,7 +393,7 @@ const AddPertemuanModal = ({ open, onClose, matakuliah, refreshMatakuliah }) => 
                     startIcon={<CancelIcon />}
                     variant="outlined"
                     sx={{
-                      color: theme.text,
+                      color: 'rgb(236, 214, 11)',
                       borderColor: theme.border,
                       '&:hover': { bgcolor: theme.secondary },
                     }}

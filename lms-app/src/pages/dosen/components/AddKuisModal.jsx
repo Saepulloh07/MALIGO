@@ -195,6 +195,33 @@ const AddKuisModal = ({ open, onClose, matakuliah, pertemuan, refreshMatakuliah 
     }
   };
 
+  // Define dark input styles
+  const darkInputStyles = {
+    '& .MuiOutlinedInput-root': {
+      borderRadius: 2,
+      bgcolor: '#2d3748', // Dark gray background
+      color: '#e2e8f0', // Light text for contrast
+      '&:hover': {
+        bgcolor: '#4a5568', // Slightly lighter on hover
+      },
+      '&.Mui-focused': {
+        bgcolor: '#2d3748',
+      },
+      '& .MuiOutlinedInput-notchedOutline': {
+        borderColor: '#4a5568', // Darker border
+      },
+    },
+    '& .MuiInputLabel-root': {
+      color: '#a0aec0', // Lighter label color
+      '&.Mui-focused': {
+        color: '#e2e8f0', // Focused label color
+      },
+    },
+    '& .MuiFormHelperText-root': {
+      color: '#a0aec0', // Helper text color
+    },
+  };
+
   return (
     <Modal open={open} onClose={onClose} closeAfterTransition>
       <Fade in={open} timeout={400}>
@@ -204,21 +231,21 @@ const AddKuisModal = ({ open, onClose, matakuliah, pertemuan, refreshMatakuliah 
             top: '50%',
             left: '50%',
             transform: 'translate(-50%, -50%)',
-            bgcolor: '#ffffff',
+            bgcolor: '#1a202c', // Dark background for modal
             borderRadius: 3,
             boxShadow: '0 16px 64px rgba(0, 0, 0, 0.3)',
             p: { xs: 3, sm: 5 },
             width: { xs: '95%', sm: 900 },
             maxHeight: '90vh',
             overflowY: 'auto',
-            border: '1px solid #e0e7ff',
+            border: '1px solid #2d3748',
           }}
         >
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
             <Typography
               variant="h5"
               sx={{
-                color: '#050D31',
+                color: '#e2e8f0',
                 fontWeight: 700,
                 fontSize: { xs: '1.75rem', sm: '2.25rem' },
                 letterSpacing: '-0.02em',
@@ -230,8 +257,8 @@ const AddKuisModal = ({ open, onClose, matakuliah, pertemuan, refreshMatakuliah 
               <IconButton
                 onClick={onClose}
                 sx={{
-                  color: '#64748b',
-                  '&:hover': { bgcolor: 'rgba(100, 116, 139, 0.1)' },
+                  color: '#a0aec0',
+                  '&:hover': { bgcolor: 'rgba(160, 174, 192, 0.1)' },
                 }}
               >
                 <CloseIcon fontSize="medium" />
@@ -242,7 +269,7 @@ const AddKuisModal = ({ open, onClose, matakuliah, pertemuan, refreshMatakuliah 
           <Typography
             variant="body2"
             sx={{
-              color: '#64748b',
+              color: '#a0aec0',
               mb: 3,
               fontSize: '0.875rem',
               lineHeight: 1.5,
@@ -251,12 +278,12 @@ const AddKuisModal = ({ open, onClose, matakuliah, pertemuan, refreshMatakuliah 
             Lengkapi detail kuis untuk {matakuliah?.nama} - Pertemuan {pertemuan?.pertemuanKe}: {pertemuan?.topik}
           </Typography>
 
-          <Divider sx={{ mb: 3, borderColor: '#e0e7ff' }} />
+          <Divider sx={{ mb: 3, borderColor: '#4a5568' }} />
 
           <Typography
             variant="h6"
             sx={{
-              color: '#050D31',
+              color: '#e2e8f0',
               fontWeight: 600,
               mb: 2,
               fontSize: '1.25rem',
@@ -275,9 +302,10 @@ const AddKuisModal = ({ open, onClose, matakuliah, pertemuan, refreshMatakuliah 
                   onChange={handleChange}
                   label="Jenis Kuis"
                   sx={{
-                    borderRadius: 2,
-                    bgcolor: '#f8fafc',
-                    '&:hover': { bgcolor: '#f1f5f9' },
+                    ...darkInputStyles,
+                    '& .MuiSelect-icon': {
+                      color: '#e2e8f0', // Arrow icon color
+                    },
                   }}
                 >
                   <MenuItem value="multiple_choice">Pilihan Ganda</MenuItem>
@@ -299,13 +327,7 @@ const AddKuisModal = ({ open, onClose, matakuliah, pertemuan, refreshMatakuliah 
                 variant="outlined"
                 error={!!errors.instruksi}
                 helperText={errors.instruksi}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 2,
-                    bgcolor: '#f8fafc',
-                    '&:hover': { bgcolor: '#f1f5f9' },
-                  },
-                }}
+                sx={darkInputStyles}
               />
             </Grid>
             <Grid item xs={12} sm={4}>
@@ -320,13 +342,7 @@ const AddKuisModal = ({ open, onClose, matakuliah, pertemuan, refreshMatakuliah 
                 variant="outlined"
                 error={!!errors.waktuMulai}
                 helperText={errors.waktuMulai}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 2,
-                    bgcolor: '#f8fafc',
-                    '&:hover': { bgcolor: '#f1f5f9' },
-                  },
-                }}
+                sx={darkInputStyles}
               />
             </Grid>
             <Grid item xs={12} sm={4}>
@@ -341,13 +357,7 @@ const AddKuisModal = ({ open, onClose, matakuliah, pertemuan, refreshMatakuliah 
                 variant="outlined"
                 error={!!errors.waktuSelesai}
                 helperText={errors.waktuSelesai}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 2,
-                    bgcolor: '#f8fafc',
-                    '&:hover': { bgcolor: '#f1f5f9' },
-                  },
-                }}
+                sx={darkInputStyles}
               />
             </Grid>
             <Grid item xs={12} sm={4}>
@@ -362,13 +372,7 @@ const AddKuisModal = ({ open, onClose, matakuliah, pertemuan, refreshMatakuliah 
                   variant="outlined"
                   error={!!errors.timer}
                   helperText={errors.timer || 'Masukkan durasi dalam menit (contoh: 30)'}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: 2,
-                      bgcolor: '#f8fafc',
-                      '&:hover': { bgcolor: '#f1f5f9' },
-                    },
-                  }}
+                  sx={darkInputStyles}
                   InputProps={{ inputProps: { min: 1, max: 999 } }}
                 />
               )}
@@ -383,13 +387,7 @@ const AddKuisModal = ({ open, onClose, matakuliah, pertemuan, refreshMatakuliah 
                   variant="outlined"
                   error={!!errors.bobot}
                   helperText={errors.bobot}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: 2,
-                      bgcolor: '#f8fafc',
-                      '&:hover': { bgcolor: '#f1f5f9' },
-                    },
-                  }}
+                  sx={darkInputStyles}
                   InputProps={{ inputProps: { min: 1, max: 100 } }}
                 />
               )}
@@ -406,25 +404,19 @@ const AddKuisModal = ({ open, onClose, matakuliah, pertemuan, refreshMatakuliah 
                   variant="outlined"
                   error={!!errors.bobot}
                   helperText={errors.bobot}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: 2,
-                      bgcolor: '#f8fafc',
-                      '&:hover': { bgcolor: '#f1f5f9' },
-                    },
-                  }}
+                  sx={darkInputStyles}
                   InputProps={{ inputProps: { min: 1, max: 100 } }}
                 />
               </Grid>
             )}
           </Grid>
 
-          <Divider sx={{ my: 3, borderColor: '#e0e7ff' }} />
+          <Divider sx={{ my: 3, borderColor: '#4a5568' }} />
 
           <Typography
             variant="h6"
             sx={{
-              color: '#050D31',
+              color: '#e2e8f0',
               fontWeight: 600,
               mb: 2,
               fontSize: '1.25rem',
@@ -444,13 +436,7 @@ const AddKuisModal = ({ open, onClose, matakuliah, pertemuan, refreshMatakuliah 
                 variant="outlined"
                 error={!!errors.pertanyaan}
                 helperText={errors.pertanyaan}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 2,
-                    bgcolor: '#f8fafc',
-                    '&:hover': { bgcolor: '#f1f5f9' },
-                  },
-                }}
+                sx={darkInputStyles}
               />
             </Grid>
             {formData.jenis === 'multiple_choice' && (
@@ -467,20 +453,14 @@ const AddKuisModal = ({ open, onClose, matakuliah, pertemuan, refreshMatakuliah 
                         variant="outlined"
                         error={!!errors.pilihan}
                         helperText={errors.pilihan}
-                        sx={{
-                          '& .MuiOutlinedInput-root': {
-                            borderRadius: 2,
-                            bgcolor: '#f8fafc',
-                            '&:hover': { bgcolor: '#f1f5f9' },
-                          },
-                        }}
+                        sx={darkInputStyles}
                       />
                       <Tooltip title="Hapus Pilihan">
                         <IconButton
                           onClick={() => removePilihan(index)}
                           sx={{
-                            color: '#d32f2f',
-                            '&:hover': { bgcolor: 'rgba(211, 47, 47, 0.1)' },
+                            color: '#fc8181',
+                            '&:hover': { bgcolor: 'rgba(252, 129, 129, 0.1)' },
                           }}
                         >
                           <DeleteIcon fontSize="small" />
@@ -495,13 +475,13 @@ const AddKuisModal = ({ open, onClose, matakuliah, pertemuan, refreshMatakuliah 
                     startIcon={<AddIcon />}
                     sx={{
                       textTransform: 'none',
-                      color: '#4db6ac',
+                      color: '#81e6d9',
                       fontWeight: 500,
                       mb: 2,
                       borderRadius: 2,
                       '&:hover': {
-                        bgcolor: 'rgba(77, 182, 172, 0.1)',
-                        color: '#3a8e84',
+                        bgcolor: 'rgba(129, 230, 217, 0.1)',
+                        color: '#4fd1c5',
                       },
                     }}
                   >
@@ -517,9 +497,10 @@ const AddKuisModal = ({ open, onClose, matakuliah, pertemuan, refreshMatakuliah 
                       onChange={handleSoalChange}
                       label="Jawaban Benar"
                       sx={{
-                        borderRadius: 2,
-                        bgcolor: '#f8fafc',
-                        '&:hover': { bgcolor: '#f1f5f9' },
+                        ...darkInputStyles,
+                        '& .MuiSelect-icon': {
+                          color: '#e2e8f0',
+                        },
                       }}
                     >
                       {formData.soal.pilihan.map((pilihan, index) => (
@@ -541,16 +522,16 @@ const AddKuisModal = ({ open, onClose, matakuliah, pertemuan, refreshMatakuliah 
               variant="outlined"
               sx={{
                 textTransform: 'none',
-                color: '#64748b',
-                borderColor: '#64748b',
+                color: '#a0aec0',
+                borderColor: '#a0aec0',
                 px: 4,
                 py: 1.5,
                 borderRadius: 2,
                 fontWeight: 500,
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                  bgcolor: 'rgba(100, 116, 139, 0.1)',
-                  borderColor: '#64748b',
+                  bgcolor: 'rgba(160, 174, 192, 0.1)',
+                  borderColor: '#a0aec0',
                   transform: 'translateY(-1px)',
                 },
               }}
@@ -562,22 +543,22 @@ const AddKuisModal = ({ open, onClose, matakuliah, pertemuan, refreshMatakuliah 
               variant="contained"
               disabled={loading}
               sx={{
-                bgcolor: '#050D31',
+                bgcolor: '#2b6cb0',
                 color: '#ffffff',
                 textTransform: 'none',
                 fontWeight: 600,
                 px: 4,
                 py: 1.5,
                 borderRadius: 2,
-                boxShadow: '0 4px 12px rgba(5, 13, 49, 0.2)',
+                boxShadow: '0 4px 12px rgba(43, 108, 176, 0.2)',
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                  bgcolor: '#0A1A5C',
-                  boxShadow: '0 6px 16px rgba(5, 13, 49, 0.3)',
+                  bgcolor: '#2c5282',
+                  boxShadow: '0 6px 16px rgba(43, 108, 176, 0.3)',
                   transform: 'translateY(-2px)',
                 },
                 '&:disabled': {
-                  bgcolor: '#64748b',
+                  bgcolor: '#4a5568',
                   color: '#ffffff',
                   boxShadow: 'none',
                 },

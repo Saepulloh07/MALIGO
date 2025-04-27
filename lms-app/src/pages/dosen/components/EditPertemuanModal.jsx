@@ -122,7 +122,7 @@ const EditPertemuanModal = ({ open, onClose, matakuliah, pertemuan, refreshMatak
                 '&:hover fieldset': { borderColor: '#0288d1' },
                 '&.Mui-focused fieldset': { borderColor: '#0288d1' },
               },
-              '& .MuiInputLabel-root': { color: '#616161' },
+              '& .MuiInputLabel-root': { color: '#0d0840' },
               '& .MuiInputLabel-root.Mui-focused': { color: '#0288d1' },
             }}
           />

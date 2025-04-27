@@ -11,6 +11,8 @@ import LandingPage from '../pages/landing/LandingPage';
 import DashboardDosen from '../pages/dosen/DashboardDosen';
 import CourseManagement from '../pages/dosen/pages/CourseManagement';
 import StudentProgress from '../pages/dosen/pages/StudentProgress';
+import GradeValidation from '../pages/dosen/pages/GradeValidation';
+import ExamManagement from '../pages/dosen/pages/ExamManagement';
 import ProfilePage from '../pages/dosen/pages/ProfilePage';
 import DashboardMahasiswa from '../pages/mahasiswa/DashboardMahasiswa';
 import EnrolledCourses from '../pages/mahasiswa/pages/EnrolledCourses';
@@ -18,11 +20,13 @@ import CourseDetail from '../pages/mahasiswa/pages/CourseDetail';
 import MeetingDetail from '../pages/mahasiswa/components/MeetingDetail';
 import QuizDetail from '../pages/mahasiswa/components/QuizDetail';
 import Assignments from '../pages/mahasiswa/pages/Assignments';
+import ExamPage from '../pages/mahasiswa/pages/ExamPage';
+import ExamDetail from '../pages/mahasiswa/pages/ExamDetail';
 import DosenLayout from '../layouts/DosenLayout';
 import MahasiswaLayout from '../layouts/MahasiswaLayout';
 import NotFound from '../pages/NotFound';
 
-console.log('Rendering AppRoutes'); // Debug
+console.log('Rendering AppRoutes'); 
 
 const AppRoutes = () => {
   return (
@@ -51,6 +55,8 @@ const AppRoutes = () => {
         <Route index element={<DashboardDosen />} />
         <Route path="courses" element={<CourseManagement />} />
         <Route path="progress" element={<StudentProgress />} />
+        <Route path="grade-validation" element={<GradeValidation />} />
+        <Route path="exams" element={<ExamManagement />} />
         <Route path="profile" element={<ProfilePage />} />
       </Route>
 
@@ -70,6 +76,8 @@ const AppRoutes = () => {
           <Route path="pertemuan/:meetingNumber/quiz/:quizId" element={<QuizDetail />} />
         </Route>
         <Route path="assignments" element={<Assignments />} />
+        <Route path="exams" element={<ExamPage role="mahasiswa" />} />
+        <Route path="exams/:examId" element={<ExamDetail role="mahasiswa" />} />
       </Route>
 
       {/* Admin Route */}
