@@ -31,7 +31,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { debounce } from 'lodash';
 
-// Utility космическая функция untuk memotong teks pada batas kata
+// Utility  untuk memotong teks pada batas kata
 const truncateText = (text, maxLength) => {
   if (!text || text.length <= maxLength) return text;
   const truncated = text.substring(0, maxLength);
@@ -42,7 +42,7 @@ const truncateText = (text, maxLength) => {
   return truncated + '...';
 };
 
-// Utility функция untuk mengurai teks dan merender URL sebagai tautan yang dapat diklik
+// Utility  untuk mengurai teks dan merender URL sebagai tautan yang dapat diklik
 const renderTextWithLinks = (text) => {
   if (!text) return 'N/A';
   const urlRegex = /(https?:\/\/[^\s]+)/g;

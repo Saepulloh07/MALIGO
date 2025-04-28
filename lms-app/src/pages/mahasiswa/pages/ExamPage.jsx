@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -9,36 +9,33 @@ import {
   Grid,
   CircularProgress,
   Alert,
-  keyframes,
+  Divider,
+  Chip,
+  Tooltip,
 } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
-import { School } from '@mui/icons-material';
+import { AccessTime, Assignment, PlayArrow } from '@mui/icons-material';
+import theme from '../styles/theme';
+import { fetchUjiansByMahasiswa } from '../service/ujianService';
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
-import theme from '../styles/theme';
-import { fetchUjians } from '../service/ujianService';
 
-// Animasi keyframes untuk efek neon glow
-const neonGlow = keyframes`
-  0% { box-shadow: 0 0 5px #efbf04, 0 0 10px #efbf04, 0 0 15px #efbf04; }
-  50% { box-shadow: 0 0 10px #efbf04, 0 0 20px #efbf04, 0 0 30px #efbf04; }
-  100% { box-shadow: 0 0 5px #efbf04, 0 0 10px #efbf04, 0 0 15px #efbf04; }
-`;
-
-const ExamPage = ({ role }) => {
+const ExamPage = () => {
+  const navigate = useNavigate();
   const [exams, setExams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const loadExams = async () => {
       try {
         setLoading(true);
-        const response = await fetchUjians();
-        setExams(response.data);
+        const examData = await fetchUjiansByMahasiswa();
+        console.log('Processed exam data:', examData);
+        setExams(examData);
       } catch (err) {
+        console.error('Error loading exams:', err);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -47,162 +44,211 @@ const ExamPage = ({ role }) => {
     loadExams();
   }, []);
 
+  const formatDate = (dateString) => {
+    const options = { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+    return new Date(dateString).toLocaleDateString('id-ID', options);
+  };
+
+  const groupExamsByCourse = (exams) => {
+    console.log('Grouping exams:', exams);
+    if (!Array.isArray(exams)) {
+      console.warn('Exams is not an array:', exams);
+      return {};
+    }
+
+    return exams.reduce((acc, exam) => {
+      const courseName = exam.matakuliah?.nama || exam.judul || 'Tanpa Mata Kuliah';
+      if (!acc[courseName]) {
+        acc[courseName] = [];
+      }
+      acc[courseName].push(exam);
+      return acc;
+    }, {});
+  };
+
+  const handleStartExam = (examId) => {
+    navigate(`/mahasiswa/exams/${examId}`);
+  };
+
   const handleDrawerToggle = () => {
     setSidebarOpen(!sidebarOpen);
   };
 
-  const handleExamClick = (examId) => {
-    navigate(`/mahasiswa/exams/${examId}`);
-  };
-
-  const groupExamsByCourse = () => {
-    const grouped = {};
-    exams.forEach((exam) => {
-      const course = exam.matakuliah;
-      const courseKey = course.kode;
-      if (!grouped[courseKey]) {
-        grouped[courseKey] = {
-          course: course,
-          exams: [],
-        };
-      }
-      grouped[courseKey].exams.push(exam);
-    });
-    return Object.values(grouped);
-  };
-
-  const isExamActive = (exam) => {
-    const now = new Date();
-    const start = new Date(exam.waktuMulai);
-    const end = new Date(exam.waktuSelesai);
-    return now >= start && now <= end && exam.soal_ujians.length > 0;
-  };
+  const groupedExams = groupExamsByCourse(exams);
 
   return (
     <ThemeProvider theme={theme}>
       <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#0a0e2b' }}>
-        <Sidebar open={sidebarOpen} handleDrawerToggle={handleDrawerToggle} role={role} />
+        <Sidebar open={sidebarOpen} handleDrawerToggle={handleDrawerToggle} role="mahasiswa" />
         <Box
           sx={{
             flexGrow: 1,
-            p: 4,
-            mt: 8,
-            ml: { xs: 0, sm: sidebarOpen ? '260px' : '70px' },
-            transition: 'margin-left 0.3s ease-in-out',
-            width: { xs: '100%', sm: `calc(100% - ${sidebarOpen ? '260px' : '70px'})` },
+            width: `calc(100% - ${sidebarOpen ? 260 : 70}px)`,
+            transition: 'width 0.3s ease-in-out',
+            ml: sidebarOpen ? '260px' : '70px',
           }}
         >
           <Header title="Daftar Ujian" />
-          {loading && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-              <CircularProgress sx={{ color: '#efbf04' }} />
-            </Box>
-          )}
-          {error && (
-            <Alert severity="error" sx={{ mb: 4 }}>
-              {error}
-            </Alert>
-          )}
-          {!loading && !error && (
-            <Box sx={{ mt: 4 }}>
-              <Typography
-                variant="h3"
-                sx={{ mb: 4, color: '#FFFFFF', fontFamily: '"Orbitron", sans-serif', fontWeight: 700 }}
-              >
-                Ujian Mata Kuliah
-              </Typography>
-              <Grid container spacing={3}>
-                {groupExamsByCourse().map((courseGroup) => (
-                  <Grid item xs={12} sm={6} md={4} key={courseGroup.course.kode}>
-                    <Card
-                      sx={{
-                        borderRadius: 2,
-                        bgcolor: '#050D31',
-                        color: '#FFFFFF',
-                        transition: 'transform 0.3s ease-in-out',
-                        '&:hover': {
-                          transform: 'translateY(-8px)',
-                          animation: `${neonGlow} 1.5s infinite`,
-                        },
-                        border: '1px solid #efbf04',
-                      }}
-                    >
-                      <CardContent>
-                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                          <School sx={{ fontSize: 30, color: '#efbf04', mr: 2 }} />
-                          <Typography
-                            variant="h6"
-                            sx={{ fontFamily: '"Orbitron", sans-serif', fontWeight: 500 }}
-                          >
-                            {courseGroup.course.nama}
-                          </Typography>
-                        </Box>
-                        <Typography variant="body2" sx={{ opacity: 0.7, mb: 2 }}>
-                          Kode: {courseGroup.course.kode} | Semester: {courseGroup.course.semester}
-                        </Typography>
-                        {courseGroup.exams.length > 0 ? (
-                          courseGroup.exams.map((exam) => (
-                            <Box key={exam.id} sx={{ mb: 2 }}>
-                              <Typography
-                                variant="body1"
-                                sx={{ color: '#FFFFFF', fontWeight: 500 }}
+          <Box
+            sx={{
+              p: { xs: 2, sm: 4 },
+              color: '#FFFFFF',
+              mt: '64px',
+              minHeight: 'calc(100vh - 64px)',
+            }}
+          >
+            <Typography
+              variant="h3"
+              sx={{ fontFamily: '"Orbitron", sans-serif', fontWeight: 700, mb: 4, textAlign: 'center' }}
+            >
+              Daftar Ujian
+            </Typography>
+
+            {loading && (
+              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                <CircularProgress sx={{ color: '#efbf04' }} />
+              </Box>
+            )}
+
+            {error && (
+              <Alert severity="error" sx={{ mb: 4, mx: 'auto', width: 'fit-content' }}>
+                {error}
+              </Alert>
+            )}
+
+            {!loading && !error && (
+              <Box>
+                {Object.keys(groupedExams).length === 0 ? (
+                  <Typography variant="h6" sx={{ textAlign: 'center', color: '#efbf04' }}>
+                    Tidak ada ujian tersedia saat ini.
+                  </Typography>
+                ) : (
+                  Object.entries(groupedExams).map(([course, exams]) => (
+                    <Box key={course} sx={{ mb: 4 }}>
+                      <Typography
+                        variant="h5"
+                        sx={{ fontFamily: '"Orbitron", sans-serif', fontWeight: 600, mb: 2 }}
+                      >
+                        {course}
+                      </Typography>
+                      <Divider sx={{ bgcolor: '#efbf04', mb: 3 }} />
+                      <Grid container spacing={3}>
+                        {exams.map((exam) => {
+                          const now = new Date();
+                          const startTime = new Date(exam.waktuMulai);
+                          const endTime = new Date(exam.waktuSelesai);
+                          const isActive = now >= startTime && now <= endTime;
+                          const hasStarted = now >= startTime;
+                          const isSubmitted = exam.hasSubmitted;
+
+                          return (
+                            <Grid item xs={12} sm={6} md={4} key={exam.id}>
+                              <Card
+                                sx={{
+                                  bgcolor: '#050D31',
+                                  border: '1px solid #efbf04',
+                                  borderRadius: 2,
+                                  boxShadow: '0 0 10px rgba(239, 191, 4, 0.3)',
+                                  transition: 'transform 0.2s ease',
+                                  '&:hover': {
+                                    transform: isSubmitted ? 'none' : 'scale(1.02)',
+                                  },
+                                }}
                               >
-                                {exam.judul}
-                              </Typography>
-                              <Typography
-                                variant="body2"
-                                sx={{ color: isExamActive(exam) ? '#efbf04' : 'rgba(255, 255, 255, 0.7)' }}
-                              >
-                                Status: {isExamActive(exam) ? 'Aktif' : 'Tidak Aktif'}
-                              </Typography>
-                              {isExamActive(exam) && (
-                                <Button
-                                  variant="outlined"
-                                  sx={{
-                                    mt: 1,
-                                    color: '#efbf04',
-                                    borderColor: '#efbf04',
-                                    borderRadius: 20,
-                                    '&:hover': {
-                                      bgcolor: '#efbf04',
-                                      color: '#050D31',
-                                    },
-                                  }}
-                                  onClick={() => handleExamClick(exam.id)}
-                                >
-                                  Kerjakan Ujian
-                                </Button>
-                              )}
-                            </Box>
-                          ))
-                        ) : (
-                          <Typography variant="body2" sx={{ opacity: 0.7 }}>
-                            Tidak ada ujian tersedia
-                          </Typography>
-                        )}
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                ))}
-              </Grid>
-              <Button
-                variant="outlined"
-                sx={{
-                  mt: 4,
-                  color: '#efbf04',
-                  borderColor: '#efbf04',
-                  borderRadius: 20,
-                  '&:hover': {
-                    bgcolor: '#efbf04',
-                    color: '#050D31',
-                  },
-                }}
-                onClick={() => navigate('/mahasiswa/courses')}
-              >
-                Kembali ke Daftar Mata Kuliah
-              </Button>
-            </Box>
-          )}
+                                <CardContent>
+                                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                                    <Assignment sx={{ color: '#efbf04', mr: 1, fontSize: 30 }} />
+                                    <Typography
+                                      variant="h6"
+                                      sx={{ fontFamily: '"Orbitron", sans-serif', fontWeight: 600 }}
+                                    >
+                                      {exam.judul}
+                                    </Typography>
+                                  </Box>
+                                  <Typography variant="body2" sx={{ mb: 1, opacity: 0.7 }}>
+                                    Mata Kuliah: {exam.matakuliah?.nama || 'N/A'} ({exam.matakuliah?.kode || 'N/A'})
+                                  </Typography>
+                                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                                    <AccessTime sx={{ color: '#efbf04', mr: 1, fontSize: 20 }} />
+                                    <Typography variant="body2" sx={{ opacity: 0.7 }}>
+                                      Mulai: {formatDate(exam.waktuMulai)}
+                                    </Typography>
+                                  </Box>
+                                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                                    <AccessTime sx={{ color: '#efbf04', mr: 1, fontSize: 20 }} />
+                                    <Typography variant="body2" sx={{ opacity: 0.7 }}>
+                                      Selesai: {formatDate(exam.waktuSelesai)}
+                                    </Typography>
+                                  </Box>
+                                  <Chip
+                                    label={
+                                      isSubmitted
+                                        ? 'Sudah Dikumpulkan'
+                                        : isActive
+                                        ? 'Sedang Berlangsung'
+                                        : hasStarted
+                                        ? 'Selesai'
+                                        : 'Belum Mulai'
+                                    }
+                                    sx={{
+                                      bgcolor: isSubmitted
+                                        ? '#757575'
+                                        : isActive
+                                        ? '#efbf04'
+                                        : hasStarted
+                                        ? '#d32f2f'
+                                        : '#1976d2',
+                                      color: isSubmitted || isActive ? '#050D31' : '#FFFFFF',
+                                      fontWeight: 600,
+                                      mb: 2,
+                                    }}
+                                  />
+                                  <Tooltip
+                                    title={
+                                      isSubmitted
+                                        ? 'Ujian ini sudah Anda kumpulkan dan tidak dapat diakses kembali.'
+                                        : !isActive
+                                        ? 'Ujian tidak sedang berlangsung.'
+                                        : ''
+                                    }
+                                  >
+                                    <span>
+                                      <Button
+                                        variant="contained"
+                                        disabled={!isActive || isSubmitted}
+                                        onClick={() => handleStartExam(exam.id)}
+                                        sx={{
+                                          bgcolor: '#efbf04',
+                                          color: '#050D31',
+                                          borderRadius: 1,
+                                          fontWeight: 600,
+                                          '&:hover': { bgcolor: '#d4a703' },
+                                          '&.Mui-disabled': {
+                                            bgcolor: 'rgba(239, 191, 4, 0.3)',
+                                            color: '#050D31',
+                                          },
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: 1,
+                                        }}
+                                      >
+                                        <PlayArrow />
+                                        Mulai Ujian
+                                      </Button>
+                                    </span>
+                                  </Tooltip>
+                                </CardContent>
+                              </Card>
+                            </Grid>
+                          );
+                        })}
+                      </Grid>
+                    </Box>
+                  ))
+                )}
+              </Box>
+            )}
+          </Box>
         </Box>
       </Box>
     </ThemeProvider>

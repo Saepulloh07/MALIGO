@@ -124,6 +124,9 @@ const EditPertemuanModal = ({ open, onClose, matakuliah, pertemuan, refreshMatak
               },
               '& .MuiInputLabel-root': { color: '#0d0840' },
               '& .MuiInputLabel-root.Mui-focused': { color: '#0288d1' },
+              '& .MuiInputBase-input': {
+                  color: '#000 !important', // Force input text color with !important
+                },
             }}
           />
           <TextField
@@ -144,6 +147,9 @@ const EditPertemuanModal = ({ open, onClose, matakuliah, pertemuan, refreshMatak
               },
               '& .MuiInputLabel-root': { color: '#616161' },
               '& .MuiInputLabel-root.Mui-focused': { color: '#0288d1' },
+              '& .MuiInputBase-input': {
+                  color: '#000 !important', // Force input text color with !important
+                },
             }}
           />
         </Box>
@@ -156,7 +162,7 @@ const EditPertemuanModal = ({ open, onClose, matakuliah, pertemuan, refreshMatak
           sx={{
             textTransform: 'none',
             borderColor: '#0288d1',
-            color: '#0288d1',
+            color: 'rgb(253, 238, 30)',
             bgcolor: '#ffffff',
             '&:hover': { 
               bgcolor: '#f5f5f5',

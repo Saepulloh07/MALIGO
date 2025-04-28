@@ -5,24 +5,20 @@ import {
   Typography,
   TextField,
   Button,
-  MenuItem,
-  Grid,
-  Fade,
-  IconButton,
-  Tooltip,
   FormControl,
   InputLabel,
   Select,
-  Divider,
+  MenuItem,
+  IconButton,
   FormHelperText,
+  Divider,
+  Grid,
 } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from '@mui/icons-material/Delete';
+import { Add, Delete, Close } from '@mui/icons-material';
 import { useSnackbar } from 'notistack';
 import { createKuis, createSoalKuis } from '../utils/CourseService';
 
-// Convert minutes to HH:mm:ss format (e.g., 30 → "00:30:00")
+// Convert minutes to HH:mm:ss format
 const minutesToHHMMSS = (minutes) => {
   if (!minutes || isNaN(minutes)) return null;
   const hours = Math.floor(minutes / 60);
@@ -131,7 +127,6 @@ const AddKuisModal = ({ open, onClose, matakuliah, pertemuan, refreshMatakuliah 
 
     setLoading(true);
     try {
-      // Create kuis first
       const kuisData = {
         data: {
           jenis: formData.jenis,
@@ -151,7 +146,6 @@ const AddKuisModal = ({ open, onClose, matakuliah, pertemuan, refreshMatakuliah 
       const kuisResponse = await createKuis(kuisData);
       const kuisId = kuisResponse.data.id;
 
-      // Create soal_kuis separately
       const soalKuisData = {
         data: {
           pertanyaan: formData.soal.pertanyaan.trim(),
@@ -195,380 +189,260 @@ const AddKuisModal = ({ open, onClose, matakuliah, pertemuan, refreshMatakuliah 
     }
   };
 
-  // Define dark input styles
-  const darkInputStyles = {
-    '& .MuiOutlinedInput-root': {
-      borderRadius: 2,
-      bgcolor: '#2d3748', // Dark gray background
-      color: '#e2e8f0', // Light text for contrast
-      '&:hover': {
-        bgcolor: '#4a5568', // Slightly lighter on hover
-      },
-      '&.Mui-focused': {
-        bgcolor: '#2d3748',
-      },
-      '& .MuiOutlinedInput-notchedOutline': {
-        borderColor: '#4a5568', // Darker border
-      },
-    },
-    '& .MuiInputLabel-root': {
-      color: '#a0aec0', // Lighter label color
-      '&.Mui-focused': {
-        color: '#e2e8f0', // Focused label color
-      },
-    },
-    '& .MuiFormHelperText-root': {
-      color: '#a0aec0', // Helper text color
-    },
-  };
-
   return (
-    <Modal open={open} onClose={onClose} closeAfterTransition>
-      <Fade in={open} timeout={400}>
-        <Box
-          sx={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            bgcolor: '#1a202c', // Dark background for modal
-            borderRadius: 3,
-            boxShadow: '0 16px 64px rgba(0, 0, 0, 0.3)',
-            p: { xs: 3, sm: 5 },
-            width: { xs: '95%', sm: 900 },
-            maxHeight: '90vh',
-            overflowY: 'auto',
-            border: '1px solid #2d3748',
-          }}
-        >
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-            <Typography
-              variant="h5"
-              sx={{
-                color: '#e2e8f0',
-                fontWeight: 700,
-                fontSize: { xs: '1.75rem', sm: '2.25rem' },
-                letterSpacing: '-0.02em',
-              }}
-            >
-              Tambah Kuis Baru
-            </Typography>
-            <Tooltip title="Tutup">
-              <IconButton
-                onClick={onClose}
-                sx={{
-                  color: '#a0aec0',
-                  '&:hover': { bgcolor: 'rgba(160, 174, 192, 0.1)' },
-                }}
+    <Modal open={open} onClose={onClose}>
+      <Box
+        sx={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: { xs: '90%', sm: 600 },
+          bgcolor: '#ffffff',
+          boxShadow: 24,
+          p: 4,
+          borderRadius: 2,
+          maxHeight: '90vh',
+          overflowY: 'auto',
+        }}
+      >
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: '#050D31' }}>
+            Tambah Kuis Baru
+          </Typography>
+          <IconButton onClick={onClose} sx={{ color: '#050D31' }}>
+            <Close />
+          </IconButton>
+        </Box>
+
+        <Typography variant="body2" sx={{ mb: 3, color: '#050D31' }}>
+          Lengkapi detail kuis untuk {matakuliah?.nama} - Pertemuan {pertemuan?.pertemuanKe}: {pertemuan?.topik}
+        </Typography>
+
+        <Divider sx={{ mb: 3, borderColor: '#e0e0e0' }} />
+
+        <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600, color: '#050D31' }}>
+          Informasi Kuis
+        </Typography>
+
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <FormControl fullWidth margin="normal" required error={!!errors.jenis}>
+              <InputLabel sx={{ color: '#050D31' }}>Jenis Kuis</InputLabel>
+              <Select
+                name="jenis"
+                value={formData.jenis}
+                onChange={handleChange}
+                label="Jenis Kuis"
+                sx={{ color: '#050D31' }}
               >
-                <CloseIcon fontSize="medium" />
-              </IconButton>
-            </Tooltip>
-          </Box>
+                <MenuItem value="multiple_choice">Pilihan Ganda</MenuItem>
+                <MenuItem value="esai">Esai</MenuItem>
+                <MenuItem value="tugas">Tugas</MenuItem>
+              </Select>
+              {errors.jenis && <FormHelperText>{errors.jenis}</FormHelperText>}
+            </FormControl>
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="Instruksi Kuis"
+              name="instruksi"
+              value={formData.instruksi}
+              onChange={handleChange}
+              margin="normal"
+              multiline
+              rows={3}
+              required
+              error={!!errors.instruksi}
+              helperText={errors.instruksi}
+              InputLabelProps={{ style: { color: '#050D31' } }}
+              sx={{
+                '& .MuiInputBase-input': {
+                  color: '#000000 !important', // Force input text color with !important
+                },
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Waktu Mulai"
+              name="waktuMulai"
+              type="datetime-local"
+              value={formData.waktuMulai}
+              onChange={handleChange}
+              margin="normal"
+              InputLabelProps={{ shrink: true, style: { color: '#050D31' } }}
+              required
+              error={!!errors.waktuMulai}
+              helperText={errors.waktuMulai}
+              sx={{ input: { color: '#050D31' } }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Waktu Selesai"
+              name="waktuSelesai"
+              type="datetime-local"
+              value={formData.waktuSelesai}
+              onChange={handleChange}
+              margin="normal"
+              InputLabelProps={{ shrink: true, style: { color: '#050D31' } }}
+              required
+              error={!!errors.waktuSelesai}
+              helperText={errors.waktuSelesai}
+              sx={{ input: { color: '#050D31' } }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            {formData.jenis === 'multiple_choice' && (
+              <TextField
+                fullWidth
+                label="Timer (Menit)"
+                name="timer"
+                type="number"
+                value={formData.timer}
+                onChange={handleChange}
+                margin="normal"
+                required
+                error={!!errors.timer}
+                helperText={errors.timer || 'Masukkan durasi dalam menit (contoh: 30)'}
+                InputLabelProps={{ style: { color: '#050D31' } }}
+                sx={{ input: { color: '#050D31' } }}
+                inputProps={{ min: 1 }}
+              />
+            )}
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Bobot Penilaian"
+              name="bobot"
+              type="number"
+              value={formData.bobot}
+              onChange={handleChange}
+              margin="normal"
+              required
+              error={!!errors.bobot}
+              helperText={errors.bobot}
+              InputLabelProps={{ style: { color: '#050D31' } }}
+              sx={{ input: { color: '#050D31' } }}
+              inputProps={{ min: 1, max: 100 }}
+            />
+          </Grid>
+        </Grid>
 
-          <Typography
-            variant="body2"
-            sx={{
-              color: '#a0aec0',
-              mb: 3,
-              fontSize: '0.875rem',
-              lineHeight: 1.5,
-            }}
-          >
-            Lengkapi detail kuis untuk {matakuliah?.nama} - Pertemuan {pertemuan?.pertemuanKe}: {pertemuan?.topik}
-          </Typography>
+        <Divider sx={{ my: 3, borderColor: '#e0e0e0' }} />
 
-          <Divider sx={{ mb: 3, borderColor: '#4a5568' }} />
+        <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600, color: '#050D31' }}>
+          Soal Kuis
+        </Typography>
 
-          <Typography
-            variant="h6"
-            sx={{
-              color: '#e2e8f0',
-              fontWeight: 600,
-              mb: 2,
-              fontSize: '1.25rem',
-            }}
-          >
-            Informasi Kuis
-          </Typography>
-
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <FormControl fullWidth variant="outlined" error={!!errors.jenis}>
-                <InputLabel>Jenis Kuis</InputLabel>
-                <Select
-                  name="jenis"
-                  value={formData.jenis}
-                  onChange={handleChange}
-                  label="Jenis Kuis"
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="Pertanyaan"
+              name="pertanyaan"
+              value={formData.soal.pertanyaan}
+              onChange={handleSoalChange}
+              margin="normal"
+              required
+              error={!!errors.pertanyaan}
+              helperText={errors.pertanyaan}
+              InputLabelProps={{ style: { color: '#050D31' } }}
+              sx={{ input: { color: '#050D31' } }}
+            />
+          </Grid>
+          {formData.jenis === 'multiple_choice' && (
+            <>
+              {formData.soal.pilihan.map((pilihan, index) => (
+                <Grid item xs={12} key={index}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <TextField
+                      fullWidth
+                      label={`Pilihan ${index + 1}`}
+                      name="pilihan"
+                      value={pilihan}
+                      onChange={(e) => handleSoalChange(e, index)}
+                      margin="normal"
+                      required
+                      error={!!errors.pilihan}
+                      helperText={errors.pilihan}
+                      InputLabelProps={{ style: { color: '#050D31' } }}
+                      sx={{ input: { color: '#050D31' } }}
+                    />
+                    <IconButton
+                      color="error"
+                      onClick={() => removePilihan(index)}
+                      sx={{ color: '#d32f2f' }}
+                    >
+                      <Delete />
+                    </IconButton>
+                  </Box>
+                </Grid>
+              ))}
+              <Grid item xs={12}>
+                <Button
+                  onClick={addPilihan}
+                  startIcon={<Add />}
                   sx={{
-                    ...darkInputStyles,
-                    '& .MuiSelect-icon': {
-                      color: '#e2e8f0', // Arrow icon color
-                    },
+                    color: '#0288d1',
+                    textTransform: 'none',
+                    '&:hover': { bgcolor: '#e3f2fd' },
                   }}
                 >
-                  <MenuItem value="multiple_choice">Pilihan Ganda</MenuItem>
-                  <MenuItem value="esai">Esai</MenuItem>
-                  <MenuItem value="tugas">Tugas</MenuItem>
-                </Select>
-                {errors.jenis && <FormHelperText>{errors.jenis}</FormHelperText>}
-              </FormControl>
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                label="Instruksi Kuis"
-                name="instruksi"
-                value={formData.instruksi}
-                onChange={handleChange}
-                fullWidth
-                multiline
-                rows={3}
-                variant="outlined"
-                error={!!errors.instruksi}
-                helperText={errors.instruksi}
-                sx={darkInputStyles}
-              />
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <TextField
-                label="Waktu Mulai"
-                name="waktuMulai"
-                type="datetime-local"
-                value={formData.waktuMulai}
-                onChange={handleChange}
-                fullWidth
-                InputLabelProps={{ shrink: true }}
-                variant="outlined"
-                error={!!errors.waktuMulai}
-                helperText={errors.waktuMulai}
-                sx={darkInputStyles}
-              />
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <TextField
-                label="Waktu Selesai"
-                name="waktuSelesai"
-                type="datetime-local"
-                value={formData.waktuSelesai}
-                onChange={handleChange}
-                fullWidth
-                InputLabelProps={{ shrink: true }}
-                variant="outlined"
-                error={!!errors.waktuSelesai}
-                helperText={errors.waktuSelesai}
-                sx={darkInputStyles}
-              />
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              {formData.jenis === 'multiple_choice' && (
-                <TextField
-                  label="Timer (Menit)"
-                  name="timer"
-                  type="number"
-                  value={formData.timer}
-                  onChange={handleChange}
-                  fullWidth
-                  variant="outlined"
-                  error={!!errors.timer}
-                  helperText={errors.timer || 'Masukkan durasi dalam menit (contoh: 30)'}
-                  sx={darkInputStyles}
-                  InputProps={{ inputProps: { min: 1, max: 999 } }}
-                />
-              )}
-              {formData.jenis !== 'multiple_choice' && (
-                <TextField
-                  label="Bobot Penilaian"
-                  name="bobot"
-                  type="number"
-                  value={formData.bobot}
-                  onChange={handleChange}
-                  fullWidth
-                  variant="outlined"
-                  error={!!errors.bobot}
-                  helperText={errors.bobot}
-                  sx={darkInputStyles}
-                  InputProps={{ inputProps: { min: 1, max: 100 } }}
-                />
-              )}
-            </Grid>
-            {formData.jenis === 'multiple_choice' && (
-              <Grid item xs={12} sm={4}>
-                <TextField
-                  label="Bobot Penilaian"
-                  name="bobot"
-                  type="number"
-                  value={formData.bobot}
-                  onChange={handleChange}
-                  fullWidth
-                  variant="outlined"
-                  error={!!errors.bobot}
-                  helperText={errors.bobot}
-                  sx={darkInputStyles}
-                  InputProps={{ inputProps: { min: 1, max: 100 } }}
-                />
+                  Tambah Pilihan
+                </Button>
               </Grid>
-            )}
-          </Grid>
+              <Grid item xs={12}>
+                <FormControl fullWidth margin="normal" required error={!!errors.jawabanBenar}>
+                  <InputLabel sx={{ color: '#050D31' }}>Jawaban Benar</InputLabel>
+                  <Select
+                    name="jawabanBenar"
+                    value={formData.soal.jawabanBenar}
+                    onChange={handleSoalChange}
+                    label="Jawaban Benar"
+                    sx={{ color: '#050D31' }}
+                  >
+                    {formData.soal.pilihan.map((pilihan, index) => (
+                      <MenuItem key={index} value={pilihan} disabled={!pilihan}>
+                        {pilihan || `Pilihan ${index + 1} (kosong)`}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {errors.jawabanBenar && <FormHelperText>{errors.jawabanBenar}</FormHelperText>}
+                </FormControl>
+              </Grid>
+            </>
+          )}
+        </Grid>
 
-          <Divider sx={{ my: 3, borderColor: '#4a5568' }} />
-
-          <Typography
-            variant="h6"
+        <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+          <Button
+            variant="outlined"
+            onClick={onClose}
+            sx={{ color: '#efbf04', borderColor: '#050D31', '&:hover': { borderColor: '#1a237e' } }}
+          >
+            Batal
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleSubmit}
+            disabled={loading}
             sx={{
-              color: '#e2e8f0',
-              fontWeight: 600,
-              mb: 2,
-              fontSize: '1.25rem',
+              bgcolor: '#050D31',
+              color: '#fff',
+              '&:hover': { bgcolor: '#1a237e' },
+              '&:disabled': { bgcolor: '#bdbdbd', color: '#fff' },
             }}
           >
-            Soal Kuis
-          </Typography>
-
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <TextField
-                label="Pertanyaan"
-                name="pertanyaan"
-                value={formData.soal.pertanyaan}
-                onChange={handleSoalChange}
-                fullWidth
-                variant="outlined"
-                error={!!errors.pertanyaan}
-                helperText={errors.pertanyaan}
-                sx={darkInputStyles}
-              />
-            </Grid>
-            {formData.jenis === 'multiple_choice' && (
-              <>
-                {formData.soal.pilihan.map((pilihan, index) => (
-                  <Grid item xs={12} key={index}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <TextField
-                        label={`Pilihan ${index + 1}`}
-                        name="pilihan"
-                        value={pilihan}
-                        onChange={(e) => handleSoalChange(e, index)}
-                        fullWidth
-                        variant="outlined"
-                        error={!!errors.pilihan}
-                        helperText={errors.pilihan}
-                        sx={darkInputStyles}
-                      />
-                      <Tooltip title="Hapus Pilihan">
-                        <IconButton
-                          onClick={() => removePilihan(index)}
-                          sx={{
-                            color: '#fc8181',
-                            '&:hover': { bgcolor: 'rgba(252, 129, 129, 0.1)' },
-                          }}
-                        >
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    </Box>
-                  </Grid>
-                ))}
-                <Grid item xs={12}>
-                  <Button
-                    onClick={addPilihan}
-                    startIcon={<AddIcon />}
-                    sx={{
-                      textTransform: 'none',
-                      color: '#81e6d9',
-                      fontWeight: 500,
-                      mb: 2,
-                      borderRadius: 2,
-                      '&:hover': {
-                        bgcolor: 'rgba(129, 230, 217, 0.1)',
-                        color: '#4fd1c5',
-                      },
-                    }}
-                  >
-                    Tambah Pilihan
-                  </Button>
-                </Grid>
-                <Grid item xs={12}>
-                  <FormControl fullWidth variant="outlined" error={!!errors.jawabanBenar}>
-                    <InputLabel>Jawaban Benar</InputLabel>
-                    <Select
-                      name="jawabanBenar"
-                      value={formData.soal.jawabanBenar}
-                      onChange={handleSoalChange}
-                      label="Jawaban Benar"
-                      sx={{
-                        ...darkInputStyles,
-                        '& .MuiSelect-icon': {
-                          color: '#e2e8f0',
-                        },
-                      }}
-                    >
-                      {formData.soal.pilihan.map((pilihan, index) => (
-                        <MenuItem key={index} value={pilihan} disabled={!pilihan}>
-                          {pilihan || `Pilihan ${index + 1} (kosong)`}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                    {errors.jawabanBenar && <FormHelperText>{errors.jawabanBenar}</FormHelperText>}
-                  </FormControl>
-                </Grid>
-              </>
-            )}
-          </Grid>
-
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 4, gap: 2 }}>
-            <Button
-              onClick={onClose}
-              variant="outlined"
-              sx={{
-                textTransform: 'none',
-                color: '#a0aec0',
-                borderColor: '#a0aec0',
-                px: 4,
-                py: 1.5,
-                borderRadius: 2,
-                fontWeight: 500,
-                transition: 'all 0.3s ease',
-                '&:hover': {
-                  bgcolor: 'rgba(160, 174, 192, 0.1)',
-                  borderColor: '#a0aec0',
-                  transform: 'translateY(-1px)',
-                },
-              }}
-            >
-              Batal
-            </Button>
-            <Button
-              onClick={handleSubmit}
-              variant="contained"
-              disabled={loading}
-              sx={{
-                bgcolor: '#2b6cb0',
-                color: '#ffffff',
-                textTransform: 'none',
-                fontWeight: 600,
-                px: 4,
-                py: 1.5,
-                borderRadius: 2,
-                boxShadow: '0 4px 12px rgba(43, 108, 176, 0.2)',
-                transition: 'all 0.3s ease',
-                '&:hover': {
-                  bgcolor: '#2c5282',
-                  boxShadow: '0 6px 16px rgba(43, 108, 176, 0.3)',
-                  transform: 'translateY(-2px)',
-                },
-                '&:disabled': {
-                  bgcolor: '#4a5568',
-                  color: '#ffffff',
-                  boxShadow: 'none',
-                },
-              }}
-            >
-              {loading ? 'Menyimpan...' : 'Simpan Kuis'}
-            </Button>
-          </Box>
+            {loading ? 'Menyimpan...' : 'Simpan Kuis'}
+          </Button>
         </Box>
-      </Fade>
+      </Box>
     </Modal>
   );
 };

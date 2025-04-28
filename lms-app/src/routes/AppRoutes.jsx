@@ -22,6 +22,7 @@ import QuizDetail from '../pages/mahasiswa/components/QuizDetail';
 import Assignments from '../pages/mahasiswa/pages/Assignments';
 import ExamPage from '../pages/mahasiswa/pages/ExamPage';
 import ExamDetail from '../pages/mahasiswa/pages/ExamDetail';
+import ExamInterface from '../pages/mahasiswa/pages/ExamInterface'; // Import ExamInterface
 import DosenLayout from '../layouts/DosenLayout';
 import MahasiswaLayout from '../layouts/MahasiswaLayout';
 import NotFound from '../pages/NotFound';
@@ -78,6 +79,7 @@ const AppRoutes = () => {
         <Route path="assignments" element={<Assignments />} />
         <Route path="exams" element={<ExamPage role="mahasiswa" />} />
         <Route path="exams/:examId" element={<ExamDetail role="mahasiswa" />} />
+        <Route path="exams/:examId/start" element={<ExamInterface />} /> {/* New Route */}
       </Route>
 
       {/* Admin Route */}

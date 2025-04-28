@@ -1,3 +1,4 @@
+// ExamManagement.jsx
 import React, { useState, useEffect } from 'react';
 import {
   Box,
@@ -20,7 +21,7 @@ import {
 } from '@mui/material';
 import { Add, Edit, Delete, QuestionAnswer } from '@mui/icons-material';
 import { useSnackbar } from 'notistack';
-import { getExams, createExam, updateExam, deleteExam, validateMatakuliah, createSoalUjian, getSoalByUjian } from '../utils/ujianService';
+import { getExamsByDosen, createExam, updateExam, deleteExam, validateMatakuliah, createSoalUjian, getSoalByUjian } from '../utils/ujianService';
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 import UjianModal from '../components/UjianModal';
@@ -48,26 +49,42 @@ const ExamManagement = () => {
   const [matakuliahOptions, setMatakuliahOptions] = useState([]);
 
   useEffect(() => {
-    fetchExams();
-    fetchMatakuliah();
-  }, []);
+    const user = JSON.parse(localStorage.getItem('user'));
+    const nip = user?.username;
+    console.log('Current user NIP from localStorage:', nip);
+    if (!nip) {
+      enqueueSnackbar('User tidak ditemukan. Silakan login ulang.', { variant: 'error' });
+      setExams([]);
+      return;
+    }
+    setExams([]); // Reset exams sebelum fetch
+    fetchExams(nip);
+    fetchMatakuliah(nip);
+  }, []); // Trigger ulang saat komponen dimuat
 
-  const fetchExams = async () => {
+  const fetchExams = async (nip) => {
     try {
-      const response = await getExams();
-      setExams(response.data || []);
+      const response = await getExamsByDosen(nip);
+      const examData = response.data || [];
+      console.log('Filtered exams:', JSON.stringify(examData, null, 2));
+      setExams(examData);
     } catch (error) {
+      console.error('Failed to fetch exams:', error);
       enqueueSnackbar('Gagal memuat data ujian', { variant: 'error' });
+      setExams([]);
     }
   };
 
-  const fetchMatakuliah = async () => {
+  const fetchMatakuliah = async (nip) => {
     try {
-      const user = JSON.parse(localStorage.getItem('user'));
-      const response = await validateMatakuliah(user.username);
-      setMatakuliahOptions(response.data || []);
+      const response = await validateMatakuliah(nip);
+      const matakuliahData = response.data || [];
+      console.log('Matakuliah data:', JSON.stringify(matakuliahData, null, 2));
+      setMatakuliahOptions(matakuliahData);
     } catch (error) {
+      console.error('Failed to fetch matakuliah:', error);
       enqueueSnackbar('Gagal memuat data mata kuliah', { variant: 'error' });
+      setMatakuliahOptions([]);
     }
   };
 
@@ -118,6 +135,8 @@ const ExamManagement = () => {
 
   const handleSaveExam = async (examData) => {
     try {
+      const user = JSON.parse(localStorage.getItem('user'));
+      const nip = user?.username;
       if (selectedExam) {
         await updateExam(selectedExam.documentId, examData);
         enqueueSnackbar('Ujian berhasil diperbarui', { variant: 'success' });
@@ -125,7 +144,7 @@ const ExamManagement = () => {
         await createExam(examData);
         enqueueSnackbar('Ujian berhasil ditambahkan', { variant: 'success' });
       }
-      fetchExams();
+      fetchExams(nip);
       handleCloseModal();
     } catch (error) {
       enqueueSnackbar('Gagal menyimpan ujian', { variant: 'error' });
@@ -146,9 +165,11 @@ const ExamManagement = () => {
 
   const handleDeleteExam = async () => {
     try {
+      const user = JSON.parse(localStorage.getItem('user'));
+      const nip = user?.username;
       await deleteExam(selectedExamId);
       enqueueSnackbar('Ujian berhasil dihapus', { variant: 'success' });
-      fetchExams();
+      fetchExams(nip);
       handleCloseDeleteModal();
     } catch (error) {
       enqueueSnackbar('Gagal menghapus ujian', { variant: 'error' });
@@ -191,61 +212,67 @@ const ExamManagement = () => {
               Tambah Ujian
             </Button>
           </Box>
-          <TableContainer component={Paper} elevation={3}>
-            <Table>
-              <TableHead>
-                <TableRow sx={{ bgcolor: '#050D31' }}>
-                  <TableCell sx={{ color: '#FFFFFF', fontWeight: 600 }}>Judul</TableCell>
-                  <TableCell sx={{ color: '#FFFFFF', fontWeight: 600 }}>Mata Kuliah</TableCell>
-                  <TableCell sx={{ color: '#FFFFFF', fontWeight: 600 }}>Waktu Mulai</TableCell>
-                  <TableCell sx={{ color: '#FFFFFF', fontWeight: 600 }}>Waktu Selesai</TableCell>
-                  <TableCell sx={{ color: '#FFFFFF', fontWeight: 600 }}>Durasi (Menit)</TableCell>
-                  <TableCell sx={{ color: '#FFFFFF', fontWeight: 600 }}>Aksi</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {exams.map((exam) => (
-                  <TableRow
-                    key={exam.documentId}
-                    onClick={() => handleOpenSoalListModal(exam.id)}
-                    sx={{ cursor: 'pointer' }}
-                  >
-                    <TableCell>{exam.judul}</TableCell>
-                    <TableCell>{exam.matakuliah?.nama}</TableCell>
-                    <TableCell>
-                      {new Date(exam.waktuMulai).toLocaleString('id-ID')}
-                    </TableCell>
-                    <TableCell>
-                      {new Date(exam.waktuSelesai).toLocaleString('id-ID')}
-                    </TableCell>
-                    <TableCell>{convertTimerToMinutes(exam.timer)}</TableCell>
-                    <TableCell
-                      onClick={(e) => e.stopPropagation()} // Prevent row click when clicking buttons
-                    >
-                      <IconButton
-                        color="primary"
-                        onClick={() => handleOpenModal(exam)}
-                      >
-                        <Edit />
-                      </IconButton>
-                      <IconButton
-                        color="secondary"
-                        onClick={() => handleOpenSoalModal(exam.id)}
-                      >
-                        <QuestionAnswer />
-                      </IconButton>
-                      <IconButton
-                        color="error"
-                        onClick={() => handleOpenDeleteModal(exam.documentId)}
-                      >
-                        <Delete />
-                      </IconButton>
-                    </TableCell>
+          {exams.length === 0 ? (
+            <Typography variant="h6" sx={{ textAlign: 'center', mt: 4, color: '#050D31' }}>
+              Tidak ada data!
+            </Typography>
+          ) : (
+            <TableContainer component={Paper} elevation={3}>
+              <Table>
+                <TableHead>
+                  <TableRow sx={{ bgcolor: '#050D31' }}>
+                    <TableCell sx={{ color: '#FFFFFF', fontWeight: 600 }}>Judul</TableCell>
+                    <TableCell sx={{ color: '#FFFFFF', fontWeight: 600 }}>Mata Kuliah</TableCell>
+                    <TableCell sx={{ color: '#FFFFFF', fontWeight: 600 }}>Waktu Mulai</TableCell>
+                    <TableCell sx={{ color: '#FFFFFF', fontWeight: 600 }}>Waktu Selesai</TableCell>
+                    <TableCell sx={{ color: '#FFFFFF', fontWeight: 600 }}>Durasi (Menit)</TableCell>
+                    <TableCell sx={{ color: '#FFFFFF', fontWeight: 600 }}>Aksi</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                </TableHead>
+                <TableBody>
+                  {exams.map((exam) => (
+                    <TableRow
+                      key={exam.documentId}
+                      onClick={() => handleOpenSoalListModal(exam.id)}
+                      sx={{ cursor: 'pointer' }}
+                    >
+                      <TableCell>{exam.judul}</TableCell>
+                      <TableCell>{exam.matakuliah?.nama}</TableCell>
+                      <TableCell>
+                        {new Date(exam.waktuMulai).toLocaleString('id-ID')}
+                      </TableCell>
+                      <TableCell>
+                        {new Date(exam.waktuSelesai).toLocaleString('id-ID')}
+                      </TableCell>
+                      <TableCell>{convertTimerToMinutes(exam.timer)}</TableCell>
+                      <TableCell
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <IconButton
+                          color="secondary"
+                          onClick={() => handleOpenModal(exam)}
+                        >
+                          <Edit />
+                        </IconButton>
+                        <IconButton
+                          color="secondary"
+                          onClick={() => handleOpenSoalModal(exam.id)}
+                        >
+                          <QuestionAnswer />
+                        </IconButton>
+                        <IconButton
+                          color="error"
+                          onClick={() => handleOpenDeleteModal(exam.documentId)}
+                        >
+                          <Delete />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
         </Container>
         <UjianModal
           open={openModal}

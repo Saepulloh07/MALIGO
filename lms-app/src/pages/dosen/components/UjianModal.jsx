@@ -195,7 +195,7 @@ const UjianModal = ({ open, onClose, onSave, exam, matakuliahOptions }) => {
           <Button
             variant="outlined"
             onClick={onClose}
-            sx={{ color: '#050D31', borderColor: '#050D31' }}
+            sx={{ color: '#fff', borderColor: '#050D31' }}
           >
             Batal
           </Button>

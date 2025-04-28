@@ -11,14 +11,18 @@ import {
   keyframes,
   Grid,
   Divider,
-  Chip
+  Chip,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
 } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
-import { Assignment, Schedule, Book, Info, Timer } from '@mui/icons-material';
+import { Assignment, Schedule, Book, Info, Timer, Rule, Warning } from '@mui/icons-material';
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 import theme from '../styles/theme';
-import { fetchUjians } from '../service/ujianService';
+import { fetchUjiansByMahasiswa } from '../service/ujianService';
 
 // Animasi keyframes untuk efek neon glow
 const neonGlow = keyframes`
@@ -39,13 +43,17 @@ const ExamDetail = ({ role }) => {
     const loadExam = async () => {
       try {
         setLoading(true);
-        const response = await fetchUjians();
-        const selectedExam = response.data.find((e) => e.id === parseInt(examId));
+        const exams = await fetchUjiansByMahasiswa();
+        if (!Array.isArray(exams)) {
+          throw new Error('Invalid exam data: Expected an array');
+        }
+        const selectedExam = exams.find((e) => e.id === parseInt(examId));
         if (!selectedExam) {
-          throw new Error('Ujian tidak ditemukan');
+          throw new Error('Ujian tidak ditemukan atau Anda tidak terdaftar untuk ujian ini');
         }
         setExam(selectedExam);
       } catch (err) {
+        console.error('Error loading exam:', err);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -59,19 +67,18 @@ const ExamDetail = ({ role }) => {
   };
 
   const handleStartExam = () => {
-    // Placeholder for starting the exam (e.g., navigate to exam interface or update state)
-    alert('Ujian dimulai! (Fitur ini belum diimplementasikan sepenuhnya)');
+    navigate(`/mahasiswa/exams/${examId}/start`);
   };
 
   // Format tanggal lebih profesional
   const formatDate = (dateString) => {
-    const options = { 
-      weekday: 'long', 
-      day: 'numeric', 
-      month: 'long', 
+    const options = {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
       year: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     };
     return new Date(dateString).toLocaleDateString('id-ID', options);
   };
@@ -123,9 +130,9 @@ const ExamDetail = ({ role }) => {
                       {exam.judul}
                     </Typography>
                   </Box>
-                  
+
                   <Divider sx={{ bgcolor: '#efbf04', mb: 3 }} />
-                  
+
                   <Grid container spacing={3}>
                     {/* Informasi Mata Kuliah */}
                     <Grid item xs={12} md={6}>
@@ -137,21 +144,21 @@ const ExamDetail = ({ role }) => {
                       </Box>
                       <Box sx={{ pl: 3.5 }}>
                         <Typography variant="body1">
-                          {exam.matakuliah.nama}
+                          {exam.matakuliah?.nama || 'N/A'}
                         </Typography>
-                        <Chip 
-                          label={`Kode: ${exam.matakuliah.kode}`}
+                        <Chip
+                          label={`Kode: ${exam.matakuliah?.kode || 'N/A'}`}
                           size="small"
-                          sx={{ 
-                            bgcolor: 'rgba(239, 191, 4, 0.1)', 
+                          sx={{
+                            bgcolor: 'rgba(239, 191, 4, 0.1)',
                             color: '#efbf04',
                             mt: 1,
-                            fontSize: '0.75rem'
+                            fontSize: '0.75rem',
                           }}
                         />
                       </Box>
                     </Grid>
-                    
+
                     {/* Informasi Waktu */}
                     <Grid item xs={12} md={6}>
                       <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
@@ -169,7 +176,7 @@ const ExamDetail = ({ role }) => {
                         </Typography>
                       </Box>
                     </Grid>
-                    
+
                     {/* Durasi Ujian */}
                     <Grid item xs={12} md={6}>
                       <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
@@ -180,11 +187,11 @@ const ExamDetail = ({ role }) => {
                       </Box>
                       <Box sx={{ pl: 3.5 }}>
                         <Typography variant="body1">
-                          {exam.timer}
+                          {exam.timer || 'N/A'}
                         </Typography>
                       </Box>
                     </Grid>
-                    
+
                     {/* Instruksi Ujian */}
                     <Grid item xs={12}>
                       <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 1 }}>
@@ -194,15 +201,145 @@ const ExamDetail = ({ role }) => {
                             Instruksi Ujian
                           </Typography>
                           <Typography variant="body1" sx={{ whiteSpace: 'pre-line' }}>
-                            {exam.instruksi}
+                            {exam.instruksi || 'Tidak ada instruksi tersedia'}
                           </Typography>
                         </Box>
                       </Box>
                     </Grid>
                   </Grid>
-                  
+
                   <Divider sx={{ bgcolor: '#efbf04', mt: 3, mb: 3 }} />
-                  
+
+                  {/* Papan Informasi Tata Cara dan Peringatan Kecurangan */}
+                  <Box sx={{ mb: 4 }}>
+                    <Typography
+                      variant="h5"
+                      sx={{
+                        fontWeight: 600,
+                        fontFamily: '"Orbitron", sans-serif',
+                        mb: 2,
+                        color: '#efbf04',
+                      }}
+                    >
+                      Informasi Penting
+                    </Typography>
+                    <Grid container spacing={3}>
+                      {/* Tata Cara Pengerjaan Soal */}
+                      <Grid item xs={12} md={6}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                          <Rule sx={{ color: '#efbf04', mr: 1.5, fontSize: '1.5rem' }} />
+                          <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                            Tata Cara Pengerjaan Soal
+                          </Typography>
+                        </Box>
+                        <List sx={{ pl: 1 }}>
+                          <ListItem sx={{ alignItems: 'flex-start', py: 0.5 }}>
+                            <ListItemIcon sx={{ minWidth: 32, mt: 0.5 }}>
+                              <Assignment sx={{ color: '#efbf04', fontSize: '1.2rem' }} />
+                            </ListItemIcon>
+                            <ListItemText
+                              primary="Baca Soal dengan Teliti"
+                              secondary="Pastikan Anda memahami pertanyaan sebelum menjawab. Perhatikan bobot soal yang tertera."
+                              primaryTypographyProps={{ variant: 'body2', fontWeight: 600 }}
+                              secondaryTypographyProps={{ variant: 'body2', color: '#FFFFFF' }}
+                            />
+                          </ListItem>
+                          <ListItem sx={{ alignItems: 'flex-start', py: 0.5 }}>
+                            <ListItemIcon sx={{ minWidth: 32, mt: 0.5 }}>
+                              <Assignment sx={{ color: '#efbf04', fontSize: '1.2rem' }} />
+                            </ListItemIcon>
+                            <ListItemText
+                              primary="Soal Pilihan Ganda"
+                              secondary="Pilih satu jawaban yang paling tepat dengan mengklik opsi yang sesuai."
+                              primaryTypographyProps={{ variant: 'body2', fontWeight: 600 }}
+                              secondaryTypographyProps={{ variant: 'body2', color: '#FFFFFF' }}
+                            />
+                          </ListItem>
+                          <ListItem sx={{ alignItems: 'flex-start', py: 0.5 }}>
+                            <ListItemIcon sx={{ minWidth: 32, mt: 0.5 }}>
+                              <Assignment sx={{ color: '#efbf04', fontSize: '1.2rem' }} />
+                            </ListItemIcon>
+                            <ListItemText
+                              primary="Soal Esai"
+                              secondary="Ketik jawaban Anda pada kolom yang tersedia. Pastikan jawaban jelas dan lengkap."
+                              primaryTypographyProps={{ variant: 'body2', fontWeight: 600 }}
+                              secondaryTypographyProps={{ variant: 'body2', color: '#FFFFFF' }}
+                            />
+                          </ListItem>
+                          <ListItem sx={{ alignItems: 'flex-start', py: 0.5 }}>
+                            <ListItemIcon sx={{ minWidth: 32, mt: 0.5 }}>
+                              <Assignment sx={{ color: '#efbf04', fontSize: '1.2rem' }} />
+                            </ListItemIcon>
+                            <ListItemText
+                              primary="Navigasi Soal"
+                              secondary="Gunakan tombol 'Sebelumnya' dan 'Selanjutnya' untuk berpindah antar soal. Anda juga dapat memilih soal langsung dari panel navigasi."
+                              primaryTypographyProps={{ variant: 'body2', fontWeight: 600 }}
+                              secondaryTypographyProps={{ variant: 'body2', color: '#FFFFFF' }}
+                            />
+                          </ListItem>
+                          <ListItem sx={{ alignItems: 'flex-start', py: 0.5 }}>
+                            <ListItemIcon sx={{ minWidth: 32, mt: 0.5 }}>
+                              <Assignment sx={{ color: '#efbf04', fontSize: '1.2rem' }} />
+                            </ListItemIcon>
+                            <ListItemText
+                              primary="Pengumpulan Jawaban"
+                              secondary="Klik 'Selesai dan Kumpulkan' setelah semua soal dijawab atau saat waktu hampir habis. Pastikan Anda mengonfirmasi pengumpulan."
+                              primaryTypographyProps={{ variant: 'body2', fontWeight: 600 }}
+                              secondaryTypographyProps={{ variant: 'body2', color: '#FFFFFF' }}
+                            />
+                          </ListItem>
+                        </List>
+                      </Grid>
+
+                      {/* Instruksi Peringatan Kecurangan */}
+                      <Grid item xs={12} md={6}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                          <Warning sx={{ color: '#efbf04', mr: 1.5, fontSize: '1.5rem' }} />
+                          <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                            Peringatan Kecurangan
+                          </Typography>
+                        </Box>
+                        <List sx={{ pl: 1 }}>
+                          <ListItem sx={{ alignItems: 'flex-start', py: 0.5 }}>
+                            <ListItemIcon sx={{ minWidth: 32, mt: 0.5 }}>
+                              <Warning sx={{ color: '#efbf04', fontSize: '1.2rem' }} />
+                            </ListItemIcon>
+                            <ListItemText
+                              primary="Tindakan Dilarang"
+                              secondary="Jangan melakukan klik kanan, menyalin/menempel, membuka tab lain, mengambil screenshot, atau keluar dari mode layar penuh."
+                              primaryTypographyProps={{ variant: 'body2', fontWeight: 600 }}
+                              secondaryTypographyProps={{ variant: 'body2', color: '#FFFFFF' }}
+                            />
+                          </ListItem>
+                          <ListItem sx={{ alignItems: 'flex-start', py: 0.5 }}>
+                            <ListItemIcon sx={{ minWidth: 32, mt: 0.5 }}>
+                              <Warning sx={{ color: '#efbf04', fontSize: '1.2rem' }} />
+                            </ListItemIcon>
+                            <ListItemText
+                              primary="Konsekuensi Pelanggaran"
+                              secondary="Setiap pelanggaran akan memicu peringatan. Jika mencapai 3 pelanggaran, ujian Anda akan otomatis dikumpulkan."
+                              primaryTypographyProps={{ variant: 'body2', fontWeight: 600 }}
+                              secondaryTypographyProps={{ variant: 'body2', color: '#FFFFFF' }}
+                            />
+                          </ListItem>
+                          <ListItem sx={{ alignItems: 'flex-start', py: 0.5 }}>
+                            <ListItemIcon sx={{ minWidth: 32, mt: 0.5 }}>
+                              <Warning sx={{ color: '#efbf04', fontSize: '1.2rem' }} />
+                            </ListItemIcon>
+                            <ListItemText
+                              primary="Integritas Akademik"
+                              secondary="Lakukan ujian dengan jujur. Segala bentuk kecurangan dapat mengakibatkan sanksi akademik sesuai peraturan."
+                              primaryTypographyProps={{ variant: 'body2', fontWeight: 600 }}
+                              secondaryTypographyProps={{ variant: 'body2', color: '#FFFFFF' }}
+                            />
+                          </ListItem>
+                        </List>
+                      </Grid>
+                    </Grid>
+                  </Box>
+
+                  <Divider sx={{ bgcolor: '#efbf04', mt: 3, mb: 3 }} />
+
                   <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
                     <Button
                       variant="outlined"
@@ -230,7 +367,7 @@ const ExamDetail = ({ role }) => {
                         },
                       }}
                       onClick={handleStartExam}
-                      disabled={exam.soal_ujians.length === 0}
+                      disabled={exam.soal_ujians?.length === 0}
                     >
                       Mulai Ujian
                     </Button>

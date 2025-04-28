@@ -2,6 +2,26 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:1337/api';
 
+export const getExamsByDosen = async (nip) => {
+  try {
+    console.log(`Fetching exams for NIP: ${nip}`);
+    const response = await axios.get(
+      `${API_URL}/ujians?populate=*&filters[matakuliah][dosens][nip][$eq]=${nip}`
+    );
+    console.log('API response for exams:', JSON.stringify(response.data, null, 2));
+    // Validasi apakah data.data kosong
+    if (!response.data.data || response.data.data.length === 0) {
+      console.log('No exams found for this NIP');
+      return { data: [] };
+    }
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching exams by dosen:', error.response?.data || error.message);
+    throw new Error('Failed to fetch exams');
+  }
+};
+
+// Fungsi lainnya tetap sama
 export const getExams = async () => {
   try {
     const response = await axios.get(`${API_URL}/ujians?populate=*`);

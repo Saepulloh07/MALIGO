@@ -658,7 +658,7 @@ const AddMateriModal = ({ open, onClose, matakuliah, pertemuan, refreshMatakulia
                     startIcon={<CancelIcon />}
                     variant="outlined"
                     sx={{
-                      color: theme.text,
+                      color: 'rgb(253, 238, 30)',
                       borderColor: theme.border,
                       '&:hover': { bgcolor: theme.secondary },
                     }}

@@ -253,7 +253,7 @@ const EditMatakuliahModal = ({ open, onClose, matakuliah, refreshMatakuliah }) =
                 variant="outlined"
                 disabled={loading}
                 sx={{
-                  color: theme.text,
+                  color: 'rgb(253, 238, 30)',
                   borderColor: theme.border,
                   '&:hover': { bgcolor: theme.secondary },
                 }}
