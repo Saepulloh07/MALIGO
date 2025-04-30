@@ -1,9 +1,9 @@
 'use strict';
 
 /**
- * rekap-nilai service
+ * thesis service
  */
 
 const { createCoreService } = require('@strapi/strapi').factories;
 
-module.exports = createCoreService('api::rekap-nilai.rekap-nilai');
+module.exports = createCoreService('api::thesis.thesis');

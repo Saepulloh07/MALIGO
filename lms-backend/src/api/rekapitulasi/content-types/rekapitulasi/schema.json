@@ -1,0 +1,27 @@
+{
+  "kind": "collectionType",
+  "collectionName": "rekapitulasis",
+  "info": {
+    "singularName": "rekapitulasi",
+    "pluralName": "rekapitulasis",
+    "displayName": "Rekapitulasi",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "mahasiswa": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::mahasiswa.mahasiswa",
+      "inversedBy": "rekapitulasis"
+    },
+    "matakuliah": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::matakuliah.matakuliah",
+      "inversedBy": "rekapitulasis"
+    }
+  }
+}

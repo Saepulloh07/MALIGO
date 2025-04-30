@@ -2,6 +2,42 @@ import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:1337/api';
 
+// Fungsi untuk membuat entri Rekapitulasi
+export const createRekapitulasi = async (mahasiswaId, matakuliahId) => {
+  try {
+    // Cek apakah entri rekapitulasi sudah ada
+    const existingRekap = await axios.get(`${API_URL}/rekapitulasis`, {
+      params: {
+        'filters[mahasiswa][id][$eq]': mahasiswaId,
+        'filters[matakuliah][id][$eq]': matakuliahId,
+      },
+    });
+
+    if (existingRekap.data.data.length > 0) {
+      console.log(`Rekapitulasi sudah ada untuk mahasiswa ${mahasiswaId} dan matakuliah ${matakuliahId}`);
+      return existingRekap.data.data[0];
+    }
+
+    // Buat entri rekapitulasi baru
+    const response = await axios.post(`${API_URL}/rekapitulasis`, {
+      data: {
+        mahasiswa: mahasiswaId,
+        matakuliah: matakuliahId,
+        publishedAt: new Date().toISOString(),
+      },
+    });
+    console.log('Created rekapitulasi:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Error creating rekapitulasi:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    });
+    throw new Error(error.message || 'Gagal membuat entri rekapitulasi');
+  }
+};
+
 // Fetch students filtered by program_studi and semester
 export const fetchStudents = async (programStudi, semester) => {
   try {
@@ -39,7 +75,7 @@ export const fetchStudents = async (programStudi, semester) => {
       programStudi,
       semester,
     });
-    throw error; // Re-throw to allow caller to handle
+    throw error;
   }
 };
 
@@ -83,7 +119,7 @@ export const searchStudents = async (programStudi, semester, query) => {
       semester,
       query,
     });
-    throw error; // Re-throw to allow caller to handle
+    throw error;
   }
 };
 
@@ -93,7 +129,7 @@ export const fetchInvitedStudents = async (matakuliahId) => {
     const queryParams = {
       'filters[matakuliah][id][$eq]': matakuliahId,
       'populate': '*',
-      '_': Date.now(), // Cache-busting parameter
+      '_': Date.now(),
     };
     console.log('Fetching invited students with params:', queryParams);
 
@@ -117,7 +153,7 @@ export const fetchInvitedStudents = async (matakuliahId) => {
       const mahasiswa = invited.mahasiswa;
       return {
         id: invited.id,
-        mahasiswaId: Number(mahasiswa.id), // Ensure mahasiswaId is a number
+        mahasiswaId: Number(mahasiswa.id),
         nim: mahasiswa.nim || 'N/A',
         namaLengkap: mahasiswa.namaLengkap || mahasiswa.nama_lengkap || 'N/A',
         semester: mahasiswa.semester || 'N/A',
@@ -146,7 +182,7 @@ export const fetchInvitedStudents = async (matakuliahId) => {
   }
 };
 
-// Invite students to a matakuliah
+// Invite students to a matakuliah and create rekapitulasi entries
 export const inviteStudents = async (matakuliahId, studentIds, diundangOleh) => {
   try {
     const user = JSON.parse(localStorage.getItem('user'));
@@ -168,8 +204,9 @@ export const inviteStudents = async (matakuliahId, studentIds, diundangOleh) => 
       userId: user.id,
     });
 
-    const promises = studentIds.map((studentId) =>
-      axios.post(`${API_URL}/undangan-mahasiswas`, {
+    const promises = studentIds.map(async (studentId) => {
+      // 1. Buat entri undangan
+      const undanganResponse = await axios.post(`${API_URL}/undangan-mahasiswas`, {
         data: {
           matakuliah: matakuliahId,
           mahasiswa: studentId,
@@ -177,11 +214,16 @@ export const inviteStudents = async (matakuliahId, studentIds, diundangOleh) => 
           diundang_oleh: diundangOlehId,
           tanggalUndangan: new Date().toISOString(),
         },
-      })
-    );
+      });
+
+      // 2. Buat entri rekapitulasi
+      await createRekapitulasi(studentId, matakuliahId);
+
+      return undanganResponse;
+    });
 
     const responses = await Promise.all(promises);
-    console.log('Successfully invited students:', studentIds, responses.map((res) => res.data));
+    console.log('Successfully invited students and created rekapitulasi:', studentIds, responses.map((res) => res.data));
   } catch (error) {
     console.error('Error inviting students:', {
       message: error.message,

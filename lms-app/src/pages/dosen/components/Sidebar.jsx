@@ -22,11 +22,12 @@ const Sidebar = ({ open, handleDrawerToggle, role }) => {
   const menuItems = [
     { text: 'Dashboard', icon: <Dashboard />, path: `/${role}` },
     { text: 'Mata Kuliah', icon: <School />, path: `/${role}/courses` },
-    { text: 'Kemajuan', icon: <People />, path: `/${role}/progress` },
+
     ...(role === 'dosen' ? [
       { text: 'Validasi Nilai', icon: <AssignmentTurnedIn />, path: `/${role}/grade-validation` },
       { text: 'Manajemen Ujian', icon: <Quiz />, path: `/${role}/exams` }
     ] : []),
+    { text: 'Rekapitulasi', icon: <People />, path: `/${role}/progress` },
     { text: 'Profil', icon: <Person />, path: `/${role}/profile` },
   ];
 

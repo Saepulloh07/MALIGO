@@ -10,7 +10,7 @@ import RegisterSuccessPage from '../pages/auth/RegisterSuccessPage';
 import LandingPage from '../pages/landing/LandingPage';
 import DashboardDosen from '../pages/dosen/DashboardDosen';
 import CourseManagement from '../pages/dosen/pages/CourseManagement';
-import StudentProgress from '../pages/dosen/pages/StudentProgress';
+import Rekapitulasi from '../pages/dosen/pages/Rekapitulasi';
 import GradeValidation from '../pages/dosen/pages/GradeValidation';
 import ExamManagement from '../pages/dosen/pages/ExamManagement';
 import ProfilePage from '../pages/dosen/pages/ProfilePage';
@@ -22,12 +22,11 @@ import QuizDetail from '../pages/mahasiswa/components/QuizDetail';
 import Assignments from '../pages/mahasiswa/pages/Assignments';
 import ExamPage from '../pages/mahasiswa/pages/ExamPage';
 import ExamDetail from '../pages/mahasiswa/pages/ExamDetail';
-import ExamInterface from '../pages/mahasiswa/pages/ExamInterface'; // Import ExamInterface
+import ExamInterface from '../pages/mahasiswa/pages/ExamInterface';
 import DosenLayout from '../layouts/DosenLayout';
 import MahasiswaLayout from '../layouts/MahasiswaLayout';
 import NotFound from '../pages/NotFound';
-
-console.log('Rendering AppRoutes'); 
+import BankSkripsi from '../pages/mahasiswa/pages/BankSkripsi';
 
 const AppRoutes = () => {
   return (
@@ -55,7 +54,7 @@ const AppRoutes = () => {
       >
         <Route index element={<DashboardDosen />} />
         <Route path="courses" element={<CourseManagement />} />
-        <Route path="progress" element={<StudentProgress />} />
+        <Route path="progress" element={<Rekapitulasi />} />
         <Route path="grade-validation" element={<GradeValidation />} />
         <Route path="exams" element={<ExamManagement />} />
         <Route path="profile" element={<ProfilePage />} />
@@ -79,7 +78,8 @@ const AppRoutes = () => {
         <Route path="assignments" element={<Assignments />} />
         <Route path="exams" element={<ExamPage role="mahasiswa" />} />
         <Route path="exams/:examId" element={<ExamDetail role="mahasiswa" />} />
-        <Route path="exams/:examId/start" element={<ExamInterface />} /> {/* New Route */}
+        <Route path="exams/:examId/start" element={<ExamInterface />} />
+        <Route path="bank-skripsi" element={<BankSkripsi />} />
       </Route>
 
       {/* Admin Route */}
@@ -87,12 +87,12 @@ const AppRoutes = () => {
         path="/admin"
         element={
           <PrivateRoute requiredRole="admin">
-            <NotFound /> {/* Replace with AdminDashboard if needed */}
+            <NotFound /> {/* Ganti dengan AdminDashboard jika tersedia */}
           </PrivateRoute>
         }
       />
 
-      {/* Fallback Route */}
+      {/* Fallback Route for 404 */}
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

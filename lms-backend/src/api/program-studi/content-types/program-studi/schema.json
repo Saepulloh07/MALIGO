@@ -37,6 +37,12 @@
       "relation": "oneToMany",
       "target": "api::matakuliah.matakuliah",
       "mappedBy": "program_studi"
+    },
+    "theses": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::thesis.thesis",
+      "mappedBy": "program_studi"
     }
   }
 }

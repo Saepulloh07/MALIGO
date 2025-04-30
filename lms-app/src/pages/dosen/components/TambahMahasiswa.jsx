@@ -62,7 +62,6 @@ const TambahMahasiswaModal = ({ open, handleClose, matakuliah }) => {
   const fetchData = async () => {
     console.log('fetchData called with matakuliah:', JSON.stringify(matakuliah, null, 2));
 
-    // Extract programStudi and semester from matakuliah
     const programStudi = matakuliah?.program_studi;
     const semester = matakuliah?.semester;
 
@@ -71,7 +70,6 @@ const TambahMahasiswaModal = ({ open, handleClose, matakuliah }) => {
       semester,
     });
 
-    // Validate matakuliah, programStudi, and semester
     if (!matakuliah?.id || !programStudi?.id || !semester) {
       const errorMessage = 'Data matakuliah, program studi, atau semester tidak valid';
       console.warn('Validation failed:', {
@@ -90,17 +88,14 @@ const TambahMahasiswaModal = ({ open, handleClose, matakuliah }) => {
     setLoading(true);
     setError(null);
     try {
-      // Fetch all students for the programStudi and semester
       const allStudents = searchQuery
         ? await searchStudents(programStudi, semester, searchQuery)
         : await fetchStudents(programStudi, semester);
       console.log('Fetched students:', JSON.stringify(allStudents, null, 2));
 
-      // Fetch invited students for the matakuliah
       const invited = await fetchInvitedStudents(matakuliah.id);
       console.log('Fetched invited students:', JSON.stringify(invited, null, 2));
 
-      // Filter out students who are already invited
       const invitedIds = new Set(invited.map((student) => student.mahasiswaId));
       const uninvitedStudents = allStudents.filter(
         (student) => !invitedIds.has(Number(student.id))
@@ -182,12 +177,12 @@ const TambahMahasiswaModal = ({ open, handleClose, matakuliah }) => {
     setLoading(true);
     try {
       await inviteStudents(matakuliah.id, selectedStudents);
-      enqueueSnackbar('Mahasiswa berhasil diundang', { variant: 'success' });
+      enqueueSnackbar('Mahasiswa berhasil diundang dan entri rekapitulasi dibuat', { variant: 'success' });
       setSelectedStudents([]);
-      await fetchData(); // Refresh the list after inviting
+      await fetchData();
     } catch (error) {
       console.error('Error inviting students:', error);
-      enqueueSnackbar(error.message || 'Gagal mengundang mahasiswa', { variant: 'error' });
+      enqueueSnackbar(error.message || 'Gagal mengundang mahasiswa atau membuat entri rekapitulasi', { variant: 'error' });
     } finally {
       setLoading(false);
     }

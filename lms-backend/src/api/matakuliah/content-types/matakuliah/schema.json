@@ -50,14 +50,14 @@
       "target": "api::undangan-mahasiswa.undangan-mahasiswa",
       "mappedBy": "matakuliah"
     },
-    "rekap_nilais": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::rekap-nilai.rekap-nilai",
-      "mappedBy": "matakuliah"
-    },
     "sks": {
       "type": "integer"
+    },
+    "rekapitulasis": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::rekapitulasi.rekapitulasi",
+      "mappedBy": "matakuliah"
     }
   }
 }

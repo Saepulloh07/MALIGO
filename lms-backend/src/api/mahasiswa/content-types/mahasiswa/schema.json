@@ -62,17 +62,17 @@
       "target": "api::progress-belajar.progress-belajar",
       "mappedBy": "mahasiswa"
     },
-    "rekap_nilais": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::rekap-nilai.rekap-nilai",
-      "mappedBy": "mahasiswa"
-    },
     "namaLengkap": {
       "type": "string"
     },
     "imageUrl": {
       "type": "string"
+    },
+    "rekapitulasis": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::rekapitulasi.rekapitulasi",
+      "mappedBy": "mahasiswa"
     }
   }
 }

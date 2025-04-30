@@ -600,9 +600,9 @@ export interface ApiMahasiswaMahasiswa extends Struct.CollectionTypeSchema {
       'api::progress-belajar.progress-belajar'
     >;
     publishedAt: Schema.Attribute.DateTime;
-    rekap_nilais: Schema.Attribute.Relation<
+    rekapitulasis: Schema.Attribute.Relation<
       'oneToMany',
-      'api::rekap-nilai.rekap-nilai'
+      'api::rekapitulasi.rekapitulasi'
     >;
     semester: Schema.Attribute.Integer;
     status_class: Schema.Attribute.Enumeration<
@@ -655,9 +655,9 @@ export interface ApiMatakuliahMatakuliah extends Struct.CollectionTypeSchema {
       'api::program-studi.program-studi'
     >;
     publishedAt: Schema.Attribute.DateTime;
-    rekap_nilais: Schema.Attribute.Relation<
+    rekapitulasis: Schema.Attribute.Relation<
       'oneToMany',
-      'api::rekap-nilai.rekap-nilai'
+      'api::rekapitulasi.rekapitulasi'
     >;
     semester: Schema.Attribute.Integer;
     sks: Schema.Attribute.Integer;
@@ -794,6 +794,7 @@ export interface ApiProgramStudiProgramStudi
     >;
     nama: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
+    theses: Schema.Attribute.Relation<'oneToMany', 'api::thesis.thesis'>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -843,12 +844,14 @@ export interface ApiProgressBelajarProgressBelajar
   };
 }
 
-export interface ApiRekapNilaiRekapNilai extends Struct.CollectionTypeSchema {
-  collectionName: 'rekap_nilais';
+export interface ApiRekapitulasiRekapitulasi
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'rekapitulasis';
   info: {
-    displayName: 'Rekap Nilai';
-    pluralName: 'rekap-nilais';
-    singularName: 'rekap-nilai';
+    description: '';
+    displayName: 'Rekapitulasi';
+    pluralName: 'rekapitulasis';
+    singularName: 'rekapitulasi';
   };
   options: {
     draftAndPublish: true;
@@ -857,11 +860,10 @@ export interface ApiRekapNilaiRekapNilai extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    grade: Schema.Attribute.String;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
-      'api::rekap-nilai.rekap-nilai'
+      'api::rekapitulasi.rekapitulasi'
     > &
       Schema.Attribute.Private;
     mahasiswa: Schema.Attribute.Relation<
@@ -872,10 +874,7 @@ export interface ApiRekapNilaiRekapNilai extends Struct.CollectionTypeSchema {
       'manyToOne',
       'api::matakuliah.matakuliah'
     >;
-    nilaiTugas: Schema.Attribute.Decimal;
-    nilaiUjian: Schema.Attribute.Decimal;
     publishedAt: Schema.Attribute.DateTime;
-    totalNilai: Schema.Attribute.Decimal;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -953,6 +952,46 @@ export interface ApiSoalUjianSoalUjian extends Struct.CollectionTypeSchema {
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+  };
+}
+
+export interface ApiThesisThesis extends Struct.CollectionTypeSchema {
+  collectionName: 'theses';
+  info: {
+    displayName: 'thesis';
+    pluralName: 'theses';
+    singularName: 'thesis';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    abstract: Schema.Attribute.Blocks;
+    author: Schema.Attribute.String;
+    category: Schema.Attribute.String;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    file: Schema.Attribute.Media<
+      'images' | 'files' | 'videos' | 'audios',
+      true
+    >;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::thesis.thesis'
+    > &
+      Schema.Attribute.Private;
+    program_studi: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::program-studi.program-studi'
+    >;
+    publishedAt: Schema.Attribute.DateTime;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    year: Schema.Attribute.String;
   };
 }
 
@@ -1566,9 +1605,10 @@ declare module '@strapi/strapi' {
       'api::pertemuan.pertemuan': ApiPertemuanPertemuan;
       'api::program-studi.program-studi': ApiProgramStudiProgramStudi;
       'api::progress-belajar.progress-belajar': ApiProgressBelajarProgressBelajar;
-      'api::rekap-nilai.rekap-nilai': ApiRekapNilaiRekapNilai;
+      'api::rekapitulasi.rekapitulasi': ApiRekapitulasiRekapitulasi;
       'api::soal-kuis.soal-kuis': ApiSoalKuisSoalKuis;
       'api::soal-ujian.soal-ujian': ApiSoalUjianSoalUjian;
+      'api::thesis.thesis': ApiThesisThesis;
       'api::ujian.ujian': ApiUjianUjian;
       'api::undangan-mahasiswa.undangan-mahasiswa': ApiUndanganMahasiswaUndanganMahasiswa;
       'plugin::content-releases.release': PluginContentReleasesRelease;

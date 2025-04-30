@@ -1,0 +1,46 @@
+{
+  "kind": "collectionType",
+  "collectionName": "theses",
+  "info": {
+    "singularName": "thesis",
+    "pluralName": "theses",
+    "displayName": "thesis"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "author": {
+      "type": "string"
+    },
+    "year": {
+      "type": "string"
+    },
+    "program_studi": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::program-studi.program-studi",
+      "inversedBy": "theses"
+    },
+    "category": {
+      "type": "string"
+    },
+    "file": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "type": "media",
+      "multiple": true
+    },
+    "abstract": {
+      "type": "blocks"
+    }
+  }
+}

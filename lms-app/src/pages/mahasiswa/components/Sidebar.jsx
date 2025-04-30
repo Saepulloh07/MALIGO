@@ -12,7 +12,7 @@ import {
   Typography,
   IconButton,
 } from '@mui/material';
-import { Dashboard, School, People, Person, ExitToApp, Menu, Assignment } from '@mui/icons-material';
+import { Dashboard, School, People, Person, ExitToApp, Menu, Assignment, Description } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { logoutUser } from '../../../services/AuthService';
 
@@ -24,19 +24,25 @@ const Sidebar = ({ open, handleDrawerToggle, role }) => {
     { text: 'Mata Kuliah', icon: <School />, path: `/${role}/courses` },
     { text: 'Kemajuan', icon: <People />, path: `/${role}/progress` },
     { text: 'Ujian', icon: <Assignment />, path: `/${role}/exams` },
+    { text: 'Bank Skripsi', icon: <Description />, path: `/${role}/bank-skripsi` },
     { text: 'Profil', icon: <Person />, path: `/${role}/profile` },
   ];
 
   const handleLogout = async () => {
-    await logoutUser();
-    navigate('/login');
+    try {
+      await logoutUser();
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+      // Optionally handle error (e.g., show notification)
+    }
   };
 
   return (
     <Drawer
       variant="permanent"
       sx={{
-        width: open ? 0 : 70,
+        width: open ? 0 : 0,
         flexShrink: 0,
         '& .MuiDrawer-paper': {
           width: open ? 260 : 70,
@@ -46,8 +52,8 @@ const Sidebar = ({ open, handleDrawerToggle, role }) => {
           transition: 'width 0.3s ease-in-out',
           overflowX: 'hidden',
           borderRadius: 0,
-          top: '64px', // Below header
-          height: 'calc(100vh - 64px)', // Adjust for header height
+          top: '64px',
+          height: 'calc(100vh - 64px)',
         },
       }}
     >
@@ -71,8 +77,8 @@ const Sidebar = ({ open, handleDrawerToggle, role }) => {
       </Toolbar>
       <Divider sx={{ borderColor: 'rgba(134, 102, 0, 0.3)' }} />
       <List>
-        {menuItems.map((item, index) => (
-          <ListItem key={index} disablePadding>
+        {menuItems.map((item) => (
+          <ListItem key={item.text} disablePadding>
             <ListItemButton
               onClick={() => navigate(item.path)}
               sx={{
