@@ -4,10 +4,12 @@ import {
   fetchAllTheses,
   searchTheses,
   downloadThesis
-}  from '../service/bankService';
+} from '../service/skripsiService';
 import SearchFilter from '../components/SearchFilter';
 import ThesisList from '../components/ThesisList';
 import ThesisDetail from '../components/ThesisDetail';
+import ThesisSubmissionModal from '../components/ThesisSubmissionModal';
+import ThesisSubmissionList from '../components/ThesisSubmissionList';
 import Pagination from '../components/Pagination';
 import LoadingSpinner from '../../../routes/LoadingScreen';
 import ErrorAlert from '../components/ErrorAlert';
@@ -20,7 +22,10 @@ import {
   Typography, 
   Card, 
   CardContent, 
-  keyframes 
+  Tabs,
+  Tab,
+  keyframes,
+  Paper
 } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import theme from '../styles/theme';
@@ -51,6 +56,8 @@ const BankSkripsi = () => {
     itemsPerPage: 10
   });
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [tabValue, setTabValue] = useState(0);
 
   const navigate = useNavigate();
 
@@ -80,13 +87,15 @@ const BankSkripsi = () => {
       }
     };
 
-    loadTheses();
-  }, [pagination.currentPage, pagination.itemsPerPage, filters]);
+    if (tabValue === 1) {
+      loadTheses();
+    }
+  }, [pagination.currentPage, pagination.itemsPerPage, filters, tabValue]);
 
   // Handle search and filter changes
   const handleFilterChange = (newFilters) => {
-    setFilters({...filters, ...newFilters});
-    setPagination({...pagination, currentPage: 1});
+    setFilters(newFilters);
+    setPagination({ ...pagination, currentPage: 1 });
   };
 
   // Handle thesis selection
@@ -102,7 +111,7 @@ const BankSkripsi = () => {
       setError(null);
     } catch (err) {
       console.error('Error downloading thesis:', err);
-      setError(`Gagal mengunduh skripsi: ${err.message}. Silakan coba lagi.`);
+      setError(`Gagal mengunduh skripsi: ${err.message}. Silakan coba lagi atau periksa autentikasi Anda.`);
     } finally {
       setLoading(false);
     }
@@ -110,12 +119,22 @@ const BankSkripsi = () => {
 
   // Handle pagination change
   const handlePageChange = (pageNumber) => {
-    setPagination({...pagination, currentPage: pageNumber});
+    setPagination({ ...pagination, currentPage: pageNumber });
   };
 
   // Handle sidebar toggle
   const handleDrawerToggle = () => {
     setSidebarOpen(!sidebarOpen);
+  };
+
+  // Handle modal toggle
+  const handleModalToggle = () => {
+    setModalOpen(!modalOpen);
+  };
+
+  // Handle tab change
+  const handleTabChange = (event, newValue) => {
+    setTabValue(newValue);
   };
 
   return (
@@ -139,7 +158,8 @@ const BankSkripsi = () => {
           <Header title="Bank Skripsi" />
           <Container maxWidth="lg" sx={{ mt: 4 }}>
             {/* Header Section */}
-            <Card
+            <Paper
+              elevation={3}
               sx={{
                 borderRadius: 2,
                 bgcolor: '#050D31',
@@ -147,145 +167,174 @@ const BankSkripsi = () => {
                 animation: `${neonGlow} 2s infinite`,
                 border: '1px solid #efbf04',
                 mb: 4,
+                p: 3,
               }}
             >
-              <CardContent>
-                <Typography
-                  variant="h3"
-                  sx={{ fontWeight: 700, fontFamily: '"Orbitron", sans-serif', mb: 1 }}
-                >
-                  Bank Skripsi
-                </Typography>
-                <Typography variant="body1" sx={{ opacity: 0.7 }}>
-                  Akses dan jelajahi koleksi skripsi mahasiswa dari berbagai program studi
-                </Typography>
-              </CardContent>
-            </Card>
-
-            {/* Search Filter */}
-            <SearchFilter 
-              filters={filters} 
-              onFilterChange={handleFilterChange} 
-            />
-
-            {/* Error Alert */}
-            {error && <ErrorAlert message={error} />}
-
-            {/* Loading Spinner or Content */}
-            {loading ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-                <LoadingSpinner />
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Box>
+                  <Typography
+                    variant="h3"
+                    sx={{ fontWeight: 700, fontFamily: '"Orbitron", sans-serif', mb: 1 }}
+                  >
+                    Bank Skripsi
+                  </Typography>
+                  <Typography variant="body1" sx={{ opacity: 0.7 }}>
+                    Jelajahi koleksi skripsi mahasiswa dengan fitur pencarian dan preview
+                  </Typography>
+                </Box>
               </Box>
-            ) : theses.length === 0 ? (
-              <Card
-                sx={{
-                  borderRadius: 2,
-                  bgcolor: '#050D31',
+            </Paper>
+
+            {/* Tabs */}
+            <Tabs
+              value={tabValue}
+              onChange={handleTabChange}
+              sx={{
+                mb: 4,
+                bgcolor: '#050D31',
+                borderRadius: 2,
+                border: '1px solid #efbf04',
+                '.MuiTab-root': {
                   color: '#FFFFFF',
-                  border: '1px solid #efbf04',
-                  textAlign: 'center',
-                  p: 4,
-                }}
-              >
-                <CardContent>
-                  <Typography
-                    variant="h5"
-                    sx={{ color: '#FFFFFF', fontFamily: '"Orbitron", sans-serif' }}
-                  >
-                    Tidak ada data
-                  </Typography>
-                  <Typography
-                    variant="body1"
-                    sx={{ color: '#FFFFFF', opacity: 0.7, mt: 1 }}
-                  >
-                    Tidak ada skripsi yang ditemukan dengan filter saat ini.
-                  </Typography>
-                </CardContent>
-              </Card>
-            ) : (
-              <Grid container spacing={3}>
-                {/* Thesis List */}
-                <Grid item xs={12} lg={8}>
-                  <Card
+                  fontWeight: 500,
+                  textTransform: 'none',
+                  fontSize: '1rem',
+                },
+                '.Mui-selected': {
+                  color: '#efbf04 !important',
+                },
+                '.MuiTabs-indicator': {
+                  backgroundColor: '#efbf04',
+                },
+              }}
+            >
+              <Tab label="Pengajuan Skripsi" />
+              <Tab label="Pencarian Skripsi" />
+            </Tabs>
+
+            {/* Thesis Submission Modal */}
+            <ThesisSubmissionModal open={modalOpen} onClose={handleModalToggle} />
+
+            {/* Tab Content */}
+            {tabValue === 0 && (
+              <Box>
+                <ThesisSubmissionList />
+              </Box>
+            )}
+
+            {tabValue === 1 && (
+              <>
+                {/* Search Filter */}
+                <SearchFilter 
+                  filters={filters} 
+                  onFilterChange={handleFilterChange} 
+                />
+
+                {/* Error Alert */}
+                {error && <ErrorAlert message={error} />}
+
+                {/* Loading Spinner or Content */}
+                {loading ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                    <LoadingSpinner />
+                  </Box>
+                ) : theses.length === 0 ? (
+                  <Paper
+                    elevation={3}
                     sx={{
                       borderRadius: 2,
                       bgcolor: '#050D31',
                       color: '#FFFFFF',
                       border: '1px solid #efbf04',
-                      transition: 'transform 0.3s ease-in-out',
-                      '&:hover': {
-                        transform: 'translateY(-8px)',
-                        animation: `${neonGlow} 1.5s infinite`,
-                      },
+                      textAlign: 'center',
+                      p: 4,
                     }}
                   >
-                    <CardContent>
-                      <Typography
-                        variant="h4"
-                        sx={{ mb: 2, fontFamily: '"Orbitron", sans-serif', color: '#FFFFFF' }}
+                    <Typography
+                      variant="h5"
+                      sx={{ color: '#FFFFFF', fontFamily: '"Orbitron", sans-serif' }}
+                    >
+                      Tidak ada skripsi ditemukan
+                    </Typography>
+                    <Typography
+                      variant="body1"
+                      sx={{ color: '#FFFFFF', opacity: 0.7, mt: 1 }}
+                    >
+                      Coba sesuaikan filter pencarian Anda
+                    </Typography>
+                  </Paper>
+                ) : (
+                  <Grid container spacing={3}>
+                    {/* Thesis List */}
+                    <Grid item xs={12} lg={8}>
+                      <Paper
+                        elevation={3}
+                        sx={{
+                          borderRadius: 2,
+                          bgcolor: '#050D31',
+                          color: '#FFFFFF',
+                          border: '1px solid #efbf04',
+                          transition: 'transform 0.3s ease-in-out',
+                          '&:hover': {
+                            transform: 'translateY(-4px)',
+                          },
+                        }}
                       >
-                        Daftar Skripsi
-                      </Typography>
-                      <ThesisList 
-                        theses={theses}
-                        onThesisSelect={handleThesisSelect}
-                        selectedThesisId={selectedThesis?.id}
-                      />
-                      <Pagination 
-                        currentPage={pagination.currentPage}
-                        totalPages={pagination.totalPages}
-                        onPageChange={handlePageChange}
-                      />
-                    </CardContent>
-                  </Card>
-                </Grid>
-                
-                {/* Thesis Detail */}
-                <Grid item xs={12} lg={4}>
-                  {selectedThesis ? (
-                    <Card
-                      sx={{
-                        borderRadius: 2,
-                        bgcolor: '#050D31',
-                        color: '#FFFFFF',
-                        border: '1px solid #efbf04',
-                        transition: 'transform 0.3s ease-in-out',
-                        '&:hover': {
-                          transform: 'translateY(-8px)',
-                          animation: `${neonGlow} 1.5s infinite`,
-                        },
-                      }}
-                    >
-                      <CardContent>
-                        <ThesisDetail 
-                          thesis={selectedThesis} 
-                          onDownload={handleDownload} 
-                        />
-                      </CardContent>
-                    </Card>
-                  ) : (
-                    <Card
-                      sx={{
-                        borderRadius: 2,
-                        bgcolor: '#050D31',
-                        color: '#FFFFFF',
-                        border: '1px solid #efbf04',
-                        textAlign: 'center',
-                        p: 2,
-                      }}
-                    >
-                      <CardContent>
-                        <Typography
-                          variant="body1"
-                          sx={{ color: '#FFFFFF', opacity: 0.7 }}
-                        >
-                          Pilih skripsi untuk melihat detail
-                        </Typography>
-                      </CardContent>
-                    </Card>
-                  )}
-                </Grid>
-              </Grid>
+                        <CardContent>
+                          <Typography
+                            variant="h4"
+                            sx={{ mb: 3, fontFamily: '"Orbitron", sans-serif', color: '#FFFFFF' }}
+                          >
+                            Koleksi Skripsi
+                          </Typography>
+                          <ThesisList 
+                            theses={theses}
+                            onThesisSelect={handleThesisSelect}
+                            selectedThesisId={selectedThesis?.id}
+                          />
+                          <Pagination 
+                            currentPage={pagination.currentPage}
+                            totalPages={pagination.totalPages}
+                            onPageChange={handlePageChange}
+                          />
+                        </CardContent>
+                      </Paper>
+                    </Grid>
+                    
+                    {/* Thesis Detail */}
+                    <Grid item xs={12} lg={4}>
+                      <Paper
+                        elevation={3}
+                        sx={{
+                          borderRadius: 2,
+                          bgcolor: '#050D31',
+                          color: '#FFFFFF',
+                          border: '1px solid #efbf04',
+                          height: '100%',
+                        }}
+                      >
+                        <CardContent>
+                          {selectedThesis ? (
+                            <ThesisDetail 
+                              thesis={selectedThesis} 
+                              onDownload={handleDownload} 
+                            />
+                          ) : (
+                            <Box sx={{ textAlign: 'center', py: 4 }}>
+                              <Typography
+                                variant="body1"
+                                sx={{ color: '#FFFFFF', opacity: 0.7 }}
+                              >
+                                Pilih skripsi untuk melihat detail dan preview
+                              </Typography>
+                            </Box>
+                          )}
+                        </CardContent>
+                      </Paper>
+                    </Grid>
+                  </Grid>
+                )}
+              </>
             )}
           </Container>
         </Box>

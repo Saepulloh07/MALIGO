@@ -13,7 +13,7 @@ import {
   Divider,
 } from '@mui/material';
 import { debounce } from 'lodash';
-import { fetchFilterOptions } from '../service/skripsiService';
+import { fetchFilterOptions } from '../utils/skripsiService';
 
 const SearchFilter = ({ filters, onFilterChange }) => {
   const [localFilters, setLocalFilters] = useState(filters);

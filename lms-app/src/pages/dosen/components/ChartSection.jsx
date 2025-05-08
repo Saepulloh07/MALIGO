@@ -38,6 +38,14 @@ const ChartSection = ({ rekapData, matakuliahData, selectedMahasiswa, isAnalysis
   const UJIAN_WEIGHT = 0.6;
   const KUIS_WEIGHT = 0.4;
 
+  // Hardcoded scoreMap as fallback (same as in Rekapitulasi.jsx)
+  const scoreMap = {
+    97: { ujian: [54, 80], kuis: [79] }, // Praktik Pengolahan Citra
+    103: { ujian: [54, 90], kuis: [90] }, // Kecerdasan Buatan
+    105: { ujian: [], kuis: [] }, // Pemprograman
+    107: { ujian: [], kuis: [] }, // Mikrokontroller
+  };
+
   const calculateStudentMatakuliahScore = (rekapItems, matakuliahId) => {
     if (!rekapItems.length) return 0;
 
@@ -61,16 +69,10 @@ const ChartSection = ({ rekapData, matakuliahData, selectedMahasiswa, isAnalysis
         );
     }
 
-    // Fallback: Use scoreMap based on provided table
-    if (!ujianScores.length && !kuisScores.length) {
-      const scoreMap = {
-        97: { ujian: [54, 80], kuis: [79] }, // Praktik Pengolahan Citra
-        103: { ujian: [54, 90], kuis: [90] }, // Kecerdasan Buatan
-        104: { ujian: [], kuis: [] }, // Mikrokontroller (assumed id)
-      };
-
-      ujianScores = scoreMap[matakuliahId]?.ujian || [];
-      kuisScores = scoreMap[matakuliahId]?.kuis || [];
+    // Fallback: Use scoreMap for the matakuliah
+    if (!ujianScores.length && !kuisScores.length && scoreMap[matakuliahId]) {
+      ujianScores = scoreMap[matakuliahId].ujian || [];
+      kuisScores = scoreMap[matakuliahId].kuis || [];
     }
 
     const avgUjian = ujianScores.length
@@ -88,7 +90,7 @@ const ChartSection = ({ rekapData, matakuliahData, selectedMahasiswa, isAnalysis
     if (!relatedRekap.length) return 0;
 
     const studentScores = relatedRekap.reduce((acc, r) => {
-      const mahasiswaId = r.mahasiswa?.id;
+      const mahasiswaId = r.mahasiswa?.nim; // Use nim for consistency
       if (!acc[mahasiswaId]) {
         acc[mahasiswaId] = [];
       }
@@ -108,9 +110,10 @@ const ChartSection = ({ rekapData, matakuliahData, selectedMahasiswa, isAnalysis
 
   const radarData = useMemo(() => {
     const filteredRekap = selectedMahasiswa
-      ? rekapData.filter((r) => r.mahasiswa?.id === selectedMahasiswa.id)
+      ? rekapData.filter((r) => r.mahasiswa?.nim === selectedMahasiswa.nim)
       : rekapData;
 
+    // Only include matakuliah that the student is enrolled in when a student is selected
     const relevantMatakuliah = selectedMahasiswa
       ? matakuliahData.filter((mk) => filteredRekap.some((r) => r.matakuliah?.id === mk.id))
       : matakuliahData;
@@ -144,9 +147,10 @@ const ChartSection = ({ rekapData, matakuliahData, selectedMahasiswa, isAnalysis
 
   const barData = useMemo(() => {
     const filteredRekap = selectedMahasiswa
-      ? rekapData.filter((r) => r.mahasiswa?.id === selectedMahasiswa.id)
+      ? rekapData.filter((r) => r.mahasiswa?.nim === selectedMahasiswa.nim)
       : rekapData;
 
+    // Only include matakuliah that the student is enrolled in when a student is selected
     const relevantMatakuliah = selectedMahasiswa
       ? matakuliahData.filter((mk) => filteredRekap.some((r) => r.matakuliah?.id === mk.id))
       : matakuliahData;

@@ -1,0 +1,32 @@
+{
+  "kind": "collectionType",
+  "collectionName": "topics",
+  "info": {
+    "singularName": "topic",
+    "pluralName": "topics",
+    "displayName": "Topic"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "dosen": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::dosen.dosen",
+      "inversedBy": "topics"
+    },
+    "description": {
+      "type": "text"
+    },
+    "proposal": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::proposal.proposal",
+      "mappedBy": "topic"
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "kind": "collectionType",
+  "collectionName": "skripsis",
+  "info": {
+    "singularName": "skripsi",
+    "pluralName": "skripsis",
+    "displayName": "Skripsi"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "abstract": {
+      "type": "text"
+    },
+    "proposal": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::proposal.proposal",
+      "inversedBy": "skripsi"
+    },
+    "mahasiswa": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::mahasiswa.mahasiswa",
+      "inversedBy": "skripsi"
+    }
+  }
+}

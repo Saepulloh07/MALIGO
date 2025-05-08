@@ -19,9 +19,15 @@ const SectionHeader = styled(Box)(({ theme }) => ({
   borderBottom: `1px solid ${theme.palette.grey[300]}`,
 }));
 
-const StudentDetailSection = ({ rekapData, matakuliahData, selectedMahasiswa }) => {
-  const UJIAN_WEIGHT = 0.6;
-  const KUIS_WEIGHT = 0.4;
+const StudentDetailSection = ({ rekapData, matakuliahData, selectedMahasiswa, details }) => {
+  // Filter matakuliahData to only include courses the selected student is enrolled in
+  const enrolledMatakuliah = matakuliahData.filter((mk) =>
+    rekapData.some(
+      (r) =>
+        r.mahasiswa?.nim === selectedMahasiswa.nim &&
+        r.matakuliah?.id === mk.id
+    )
+  );
 
   return (
     <StyledPaper sx={{ mb: 3 }}>
@@ -35,108 +41,41 @@ const StudentDetailSection = ({ rekapData, matakuliahData, selectedMahasiswa }) 
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell sx={{ fontWeight: 600, color: '#050D31' }}>Mata Kuliah</TableCell>
-              <TableCell sx={{ fontWeight: 600, color: '#050D31' }}>Nilai Ujian</TableCell>
-              <TableCell sx={{ fontWeight: 600, color: '#050D31' }}>Nilai Kuis</TableCell>
-              <TableCell sx={{ fontWeight: 600, color: '#050D31' }}>Rata-rata</TableCell>
-              <TableCell sx={{ fontWeight: 600, color: '#050D31' }}>Penyelesaian</TableCell>
+              <TableCell sx={{ fontWeight: 600, color: '#050D31', bgcolor: '#F5F6FA' }}>Mata Kuliah</TableCell>
+              <TableCell sx={{ fontWeight: 600, color: '#050D31', bgcolor: '#F5F6FA' }}>Nilai Ujian</TableCell>
+              <TableCell sx={{ fontWeight: 600, color: '#050D31', bgcolor: '#F5F6FA' }}>Nilai Kuis</TableCell>
+              <TableCell sx={{ fontWeight: 600, color: '#050D31', bgcolor: '#F5F6FA' }}>Rata-rata</TableCell>
+              <TableCell sx={{ fontWeight: 600, color: '#050D31', bgcolor: '#F5F6FA' }}>Penyelesaian</TableCell>
+              <TableCell sx={{ fontWeight: 600, color: '#050D31', bgcolor: '#F5F6FA' }}>Kehadiran</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {matakuliahData
-              .filter((mk) =>
-                rekapData.some(
-                  (r) =>
-                    r.mahasiswa?.id === selectedMahasiswa.id &&
-                    r.matakuliah?.id === mk.id
-                )
-              )
-              .map((mk) => {
-                const relatedRekap = rekapData.filter(
-                  (r) =>
-                    r.mahasiswa?.id === selectedMahasiswa.id &&
-                    r.matakuliah?.id === mk.id
-                );
-
-                let ujianScores = [];
-                let kuisScores = [];
-
-                if (relatedRekap.length) {
-                  // Try to filter by matakuliah-specific ujians and soal_kuises
-                  ujianScores = relatedRekap
-                    .flatMap((r) =>
-                      r.mahasiswa?.jawaban_ujians?.filter((ju) =>
-                        mk.ujians?.some((uj) => uj.id === ju.ujian?.id)
-                      )?.map((ju) => ju.nilai || 0) || []
-                    );
-                  kuisScores = relatedRekap
-                    .flatMap((r) =>
-                      r.mahasiswa?.jawaban_kuis?.filter((jk) =>
-                        mk.soal_kuises?.some((sk) => sk.id === jk.soal_kuis?.id)
-                      )?.map((jk) => jk.nilai || 0) || []
-                    );
-                }
-
-                // Fallback: Assign scores based on provided table
-                if (!ujianScores.length && !kuisScores.length) {
-                  const scoreMap = {
-                    97: { ujian: [54, 80], kuis: [79] }, // Praktik Pengolahan Citra
-                    103: { ujian: [54, 90], kuis: [90] }, // Kecerdasan Buatan
-                    104: { ujian: [], kuis: [] }, // Mikrokontroller (assumed id)
-                  };
-
-                  ujianScores = scoreMap[mk.id]?.ujian || [];
-                  kuisScores = scoreMap[mk.id]?.kuis || [];
-                }
-
-                const avgUjian = ujianScores.length
-                  ? ujianScores.reduce((sum, score) => sum + score, 0) / ujianScores.length
-                  : 0;
-                const avgKuis = kuisScores.length
-                  ? kuisScores.reduce((sum, score) => sum + score, 0) / kuisScores.length
-                  : 0;
-
-                const avgScore = (avgUjian * UJIAN_WEIGHT + avgKuis * KUIS_WEIGHT).toFixed(2);
-
-                // Calculate completion rate
-                const totalTasks = (mk.ujians?.length || 0) + (mk.soal_kuises?.length || mk.pertemuans?.length || 0);
-                const completedTasks = ujianScores.length + kuisScores.length;
-                const completionRate = totalTasks
-                  ? Math.min(((completedTasks / totalTasks) * 100).toFixed(2), 100)
-                  : 0;
-
-                return (
-                  <TableRow key={mk.id}>
-                    <TableCell sx={{ color: '#050D31' }}>{mk.nama}</TableCell>
-                    <TableCell sx={{ color: '#050D31' }}>
-                      {ujianScores.length ? ujianScores.join(', ') : '-'}
-                    </TableCell>
-                    <TableCell sx={{ color: '#050D31' }}>
-                      {kuisScores.length ? kuisScores.join(', ')
-
-: '-'}
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        label={avgScore}
-                        color={avgScore >= 60 ? 'success' : 'error'}
-                        size="small"
-                        sx={{ fontWeight: 500, bgcolor: avgScore >= 60 ? '#E8F5E9' : '#FFEBEE' }}
-                      />
-                    </TableCell>
-                    <TableCell>{completionRate}%</TableCell>
-                  </TableRow>
-                );
-              })}
-            {matakuliahData.filter((mk) =>
-              rekapData.some(
-                (r) =>
-                  r.mahasiswa?.id === selectedMahasiswa.id &&
-                  r.matakuliah?.id === mk.id
-              )
-            ).length === 0 && (
+            {details
+              .filter((detail) => enrolledMatakuliah.some((mk) => mk.nama === detail.matakuliah))
+              .map((detail, index) => (
+                <TableRow key={index}>
+                  <TableCell sx={{ color: '#050D31', fontWeight: 500 }}>{detail.matakuliah}</TableCell>
+                  <TableCell sx={{ color: '#050D31' }}>{detail.ujianScores}</TableCell>
+                  <TableCell sx={{ color: '#050D31' }}>{detail.kuisScores}</TableCell>
+                  <TableCell>
+                    <Chip
+                      label={detail.avgScore}
+                      color={parseFloat(detail.avgScore) >= 60 ? 'success' : 'error'}
+                      size="small"
+                      sx={{
+                        fontWeight: 500,
+                        bgcolor: parseFloat(detail.avgScore) >= 60 ? '#E8F5E9' : '#FFEBEE',
+                        color: '#050D31',
+                      }}
+                    />
+                  </TableCell>
+                  <TableCell sx={{ color: '#050D31' }}>{detail.completionRate}</TableCell>
+                  <TableCell sx={{ color: '#050D31' }}>{detail.attendance}</TableCell>
+                </TableRow>
+              ))}
+            {enrolledMatakuliah.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} sx={{ textAlign: 'center', color: '#666666', py: 4 }}>
+                <TableCell colSpan={6} sx={{ textAlign: 'center', color: '#666666', py: 4 }}>
                   Tidak ada data nilai untuk mahasiswa ini
                 </TableCell>
               </TableRow>

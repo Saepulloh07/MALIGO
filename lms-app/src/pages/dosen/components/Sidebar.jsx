@@ -12,7 +12,7 @@ import {
   Typography,
   IconButton,
 } from '@mui/material';
-import { Dashboard, School, People, Person, ExitToApp, Menu, AssignmentTurnedIn, Quiz } from '@mui/icons-material';
+import { Dashboard, School, People, Person, ExitToApp, Menu, AssignmentTurnedIn, Quiz, Description, Diversity3 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { logoutUser } from '../../../services/AuthService';
 
@@ -22,13 +22,15 @@ const Sidebar = ({ open, handleDrawerToggle, role }) => {
   const menuItems = [
     { text: 'Dashboard', icon: <Dashboard />, path: `/${role}` },
     { text: 'Mata Kuliah', icon: <School />, path: `/${role}/courses` },
-
     ...(role === 'dosen' ? [
       { text: 'Validasi Nilai', icon: <AssignmentTurnedIn />, path: `/${role}/grade-validation` },
       { text: 'Manajemen Ujian', icon: <Quiz />, path: `/${role}/exams` }
     ] : []),
     { text: 'Rekapitulasi', icon: <People />, path: `/${role}/progress` },
+    { text: 'Manajemen Skripsi', icon: <Description  />, path: `/${role}/bank-skripsi` },
+    { text: 'Tim KBK', icon: <Diversity3 />, path: `/${role}/kbk` },
     { text: 'Profil', icon: <Person />, path: `/${role}/profile` },
+        
   ];
 
   const handleLogout = async () => {
@@ -44,7 +46,7 @@ const Sidebar = ({ open, handleDrawerToggle, role }) => {
         flexShrink: 0,
         '& .MuiDrawer-paper': {
           width: open ? 260 : 70,
-          bgcolor: '#050D31',
+          bgcolor: '#092669', // Removed !important, relying on specificity
           color: '#FFFFFF',
           borderRight: '1px solid rgba(134, 102, 0, 0.3)',
           transition: 'width 0.3s ease-in-out',
@@ -52,6 +54,9 @@ const Sidebar = ({ open, handleDrawerToggle, role }) => {
           borderRadius: 0,
           top: '64px', // Below header
           height: 'calc(100vh - 64px)', // Adjust for header height
+          // Ensure theme's MuiPaper background does not override
+          background: '#092669', // Explicitly set background
+          backgroundImage: 'none', // Remove any gradient
         },
       }}
     >

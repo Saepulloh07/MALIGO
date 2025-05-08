@@ -1,0 +1,42 @@
+{
+  "kind": "collectionType",
+  "collectionName": "proposals",
+  "info": {
+    "singularName": "proposal",
+    "pluralName": "proposals",
+    "displayName": "Proposal",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "dosen": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::dosen.dosen",
+      "inversedBy": "proposal"
+    },
+    "topic": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::topic.topic",
+      "inversedBy": "proposal"
+    },
+    "status_class": {
+      "type": "string"
+    },
+    "mahasiswa": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::mahasiswa.mahasiswa",
+      "inversedBy": "proposals"
+    },
+    "skripsi": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::skripsi.skripsi",
+      "mappedBy": "proposal"
+    }
+  }
+}

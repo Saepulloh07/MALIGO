@@ -13,7 +13,7 @@ import CourseManagement from '../pages/dosen/pages/CourseManagement';
 import Rekapitulasi from '../pages/dosen/pages/Rekapitulasi';
 import GradeValidation from '../pages/dosen/pages/GradeValidation';
 import ExamManagement from '../pages/dosen/pages/ExamManagement';
-import ProfilePage from '../pages/dosen/pages/ProfilePage';
+import ProfilePage from '../pages/auth/ProfilePage';
 import DashboardMahasiswa from '../pages/mahasiswa/DashboardMahasiswa';
 import EnrolledCourses from '../pages/mahasiswa/pages/EnrolledCourses';
 import CourseDetail from '../pages/mahasiswa/pages/CourseDetail';
@@ -27,6 +27,10 @@ import DosenLayout from '../layouts/DosenLayout';
 import MahasiswaLayout from '../layouts/MahasiswaLayout';
 import NotFound from '../pages/NotFound';
 import BankSkripsi from '../pages/mahasiswa/pages/BankSkripsi';
+import StudentProgress from '../pages/mahasiswa/pages/StudentProgress';
+import DosenProfilePage from '../pages/dosen/pages/ProfilePage';
+import MahasiswaProfilePage from '../pages/mahasiswa/pages/ProfilePage';
+import SkripsiManagement from '../pages/dosen/pages/SkripsiManagement';
 
 const AppRoutes = () => {
   return (
@@ -39,6 +43,7 @@ const AppRoutes = () => {
       <Route path="/email-confirmation" element={<ConfirmEmailPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <Route path="profile" element={<ProfilePage />} />
 
       {/* Role-Based Redirect Route */}
       <Route path="/dashboard" element={<PrivateRoute />} />
@@ -57,7 +62,8 @@ const AppRoutes = () => {
         <Route path="progress" element={<Rekapitulasi />} />
         <Route path="grade-validation" element={<GradeValidation />} />
         <Route path="exams" element={<ExamManagement />} />
-        <Route path="profile" element={<ProfilePage />} />
+        <Route path="profile" element={<DosenProfilePage />} />
+        <Route path="bank-skripsi" element={<SkripsiManagement/>} />
       </Route>
 
       {/* Mahasiswa Routes */}
@@ -80,6 +86,9 @@ const AppRoutes = () => {
         <Route path="exams/:examId" element={<ExamDetail role="mahasiswa" />} />
         <Route path="exams/:examId/start" element={<ExamInterface />} />
         <Route path="bank-skripsi" element={<BankSkripsi />} />
+        <Route path="progress" element={<StudentProgress />} />
+        <Route path="profile" element={<MahasiswaProfilePage />} />
+        
       </Route>
 
       {/* Admin Route */}

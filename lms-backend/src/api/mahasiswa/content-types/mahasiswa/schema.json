@@ -73,6 +73,18 @@
       "relation": "oneToMany",
       "target": "api::rekapitulasi.rekapitulasi",
       "mappedBy": "mahasiswa"
+    },
+    "skripsi": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::skripsi.skripsi",
+      "mappedBy": "mahasiswa"
+    },
+    "proposals": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::proposal.proposal",
+      "mappedBy": "mahasiswa"
     }
   }
 }

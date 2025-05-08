@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Container, Typography, Tabs, Tab, CircularProgress, Breadcrumbs, Link, Alert } from '@mui/material';
+import { Box, Container, Typography, Tabs, Tab, CircularProgress, Breadcrumbs, Link, Alert, Card, CardContent, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
@@ -33,6 +33,17 @@ const MainContent = styled(Box)(({ theme, open }) => ({
   paddingTop: theme.spacing(10),
   backgroundColor: '#F5F6FA',
   minHeight: '100vh',
+}));
+
+const StyledCard = styled(Card)(({ theme }) => ({
+  borderRadius: theme.spacing(2),
+  background: '#FFFFFF',
+  boxShadow: '0 4px 12px rgba(5, 13, 49, 0.15)',
+  transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
+  '&:hover': {
+    transform: 'translateY(-4px)',
+    boxShadow: '0 8px 24px rgba(5, 13, 49, 0.25)',
+  },
 }));
 
 const Rekapitulasi = () => {
@@ -136,12 +147,15 @@ const Rekapitulasi = () => {
       const allScores = [...ujianScores, ...kuisScores].filter((score) => score !== undefined);
       const avgScore = allScores.length > 0 ? (allScores.reduce((sum, score) => sum + score, 0) / allScores.length).toFixed(1) : '0.0';
       const completionRate = scores.completion || 0;
+      const attendedMeetings = rekap.matakuliah?.pertemuans?.length || 0;
+      const totalMeetings = mk.pertemuans?.length || 0;
       return {
         matakuliah: mk.nama,
         ujianScores: ujianScores.length > 0 ? ujianScores.join(', ') : '-',
         kuisScores: kuisScores.length > 0 ? kuisScores.join(', ') : '-',
         avgScore,
         completionRate: (completionRate * 100).toFixed(2) + '%',
+        attendance: totalMeetings ? `${attendedMeetings}/${totalMeetings}` : '0/0',
       };
     });
   };
@@ -174,6 +188,47 @@ const Rekapitulasi = () => {
         completion: parseFloat(d.completionRate) || 0,
       })),
     };
+  };
+
+  // Process data for Progress Analysis
+  const getProgressAnalysisData = () => {
+    const filteredRekap = selectedMahasiswa
+      ? rekapData.filter((r) => r.mahasiswa?.nim === selectedMahasiswa.nim)
+      : rekapData;
+
+    const relevantMatakuliah = selectedMahasiswa
+      ? matakuliahData.filter((mk) => filteredRekap.some((r) => r.matakuliah?.id === mk.id))
+      : matakuliahData;
+
+    const stats = relevantMatakuliah.map((mk) => {
+      const rekap = filteredRekap.find((r) => r.matakuliah?.id === mk.id) || {};
+      const scores = scoreMap[mk.id] || { ujian: [], kuis: [], completion: 0 };
+      const allScores = [...(scores.ujian || []), ...(scores.kuis || [])].filter((score) => score !== undefined);
+      const avgScore = allScores.length > 0 ? (allScores.reduce((sum, score) => sum + score, 0) / allScores.length).toFixed(1) : '0.0';
+      const highestScore = allScores.length > 0 ? Math.max(...allScores) : 0;
+      const lowestScore = allScores.length > 0 ? Math.min(...allScores) : 0;
+      const completionRate = scores.completion || 0;
+      const attendedMeetings = rekap.matakuliah?.pertemuans?.length || 0;
+      const totalMeetings = mk.pertemuans?.length || 0;
+
+      return {
+        matakuliah: mk.nama,
+        avgScore,
+        highestScore,
+        lowestScore,
+        completionRate: (completionRate * 100).toFixed(2) + '%',
+        attendance: totalMeetings ? `${attendedMeetings}/${totalMeetings}` : '0/0',
+      };
+    });
+
+    const overallStats = {
+      averageScore: stats.length > 0 ? (stats.reduce((sum, s) => sum + parseFloat(s.avgScore), 0) / stats.length).toFixed(1) : '0.0',
+      highestScore: stats.length > 0 ? Math.max(...stats.map(s => parseFloat(s.highestScore))) : 0,
+      lowestScore: stats.length > 0 ? Math.min(...stats.filter(s => s.lowestScore > 0).map(s => parseFloat(s.lowestScore))) : 0,
+      completionRate: stats.length > 0 ? (stats.reduce((sum, s) => sum + parseFloat(s.completionRate), 0) / stats.length).toFixed(2) + '%' : '0%',
+    };
+
+    return { stats, overallStats };
   };
 
   return (
@@ -282,28 +337,187 @@ const Rekapitulasi = () => {
 
               {activeTab === 1 && (
                 <>
-                  {rekapData.length === 0 ? (
+                  {mahasiswaData.length === 0 ? (
                     <Alert severity="warning" sx={{ mb: 3 }}>
-                      Tidak ada data rekapitulasi tersedia. Menggunakan data sementara.
+                      Tidak ada data mahasiswa tersedia. Menggunakan data sementara.
                     </Alert>
                   ) : (
-                    <RekapTable
-                      rekapData={rekapData}
-                      matakuliahData={matakuliahData}
-                      scoreMap={scoreMap}
-                    />
+                    <>
+                      <FilterSection
+                        mahasiswaData={mahasiswaData}
+                        selectedMahasiswa={selectedMahasiswa}
+                        setSelectedMahasiswa={setSelectedMahasiswa}
+                      />
+                      {selectedMahasiswa ? (
+                        <Box sx={{ mb: 3 }}>
+                          <StyledCard sx={{ mb: 3 }}>
+                            <CardContent>
+                              <Typography variant="h6" sx={{ fontWeight: 600, color: '#050D31', mb: 2 }}>
+                                Informasi Mahasiswa
+                              </Typography>
+                              <Grid container spacing={2}>
+                                <Grid item xs={12} sm={6}>
+                                  <Typography variant="body2" sx={{ color: '#666666' }}>
+                                    Nama: <strong>{selectedMahasiswa.namaLengkap}</strong>
+                                  </Typography>
+                                  <Typography variant="body2" sx={{ color: '#666666', mt: 1 }}>
+                                    NIM: <strong>{selectedMahasiswa.nim}</strong>
+                                  </Typography>
+                                </Grid>
+                                <Grid item xs={12} sm={6}>
+                                  <Typography variant="body2" sx={{ color: '#666666' }}>
+                                    Program Studi: <strong>{selectedMahasiswa.program_studi?.nama || '-'}</strong>
+                                  </Typography>
+                                  <Typography variant="body2" sx={{ color: '#666666', mt: 1 }}>
+                                    Semester: <strong>{selectedMahasiswa.semester || '-'}</strong>
+                                  </Typography>
+                                </Grid>
+                              </Grid>
+                            </CardContent>
+                          </StyledCard>
+                          <StudentDetailSection
+                            rekapData={rekapData}
+                            matakuliahData={matakuliahData}
+                            selectedMahasiswa={selectedMahasiswa}
+                            details={getStudentDetails()}
+                          />
+                        </Box>
+                      ) : (
+                        <Alert severity="info" sx={{ mb: 3 }}>
+                          Silakan pilih mahasiswa untuk melihat detail.
+                        </Alert>
+                      )}
+                    </>
                   )}
                 </>
               )}
 
               {activeTab === 2 && (
-                <ChartSection
-                  rekapData={rekapData}
-                  matakuliahData={matakuliahData}
-                  selectedMahasiswa={selectedMahasiswa}
-                  chartData={getChartData()}
-                  isAnalysis
-                />
+                <>
+                  {mahasiswaData.length === 0 ? (
+                    <Alert severity="warning" sx={{ mb: 3 }}>
+                      Tidak ada data mahasiswa tersedia. Menggunakan data sementara.
+                    </Alert>
+                  ) : (
+                    <>
+                      <FilterSection
+                        mahasiswaData={mahasiswaData}
+                        selectedMahasiswa={selectedMahasiswa}
+                        setSelectedMahasiswa={setSelectedMahasiswa}
+                      />
+                      <ChartSection
+                        rekapData={rekapData}
+                        matakuliahData={matakuliahData}
+                        selectedMahasiswa={selectedMahasiswa}
+                        chartData={getChartData()}
+                        isAnalysis
+                      />
+                      {selectedMahasiswa && (
+                        <Box sx={{ mt: 3 }}>
+                          <Typography
+                            variant="h6"
+                            sx={{ fontWeight: 600, color: '#050D31', mb: 2 }}
+                          >
+                            Statistik Performa
+                          </Typography>
+                          <Grid container spacing={2}>
+                            {[
+                              {
+                                label: 'Rata-rata Nilai',
+                                value: getProgressAnalysisData().overallStats.averageScore,
+                                color: '#2196F3',
+                              },
+                              {
+                                label: 'Nilai Tertinggi',
+                                value: getProgressAnalysisData().overallStats.highestScore,
+                                color: '#4CAF50',
+                              },
+                              {
+                                label: 'Nilai Terendah',
+                                value: getProgressAnalysisData().overallStats.lowestScore,
+                                color: '#FF9800',
+                              },
+                              {
+                                label: 'Tingkat Penyelesaian',
+                                value: getProgressAnalysisData().overallStats.completionRate,
+                                color: '#00BCD4',
+                              },
+                            ].map((stat, index) => (
+                              <Grid item xs={12} sm={6} md={3} key={index}>
+                                <StyledCard>
+                                  <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2, py: 2 }}>
+                                    <Box sx={{ color: stat.color, fontSize: 32 }}><BarChartIcon /></Box>
+                                    <Box>
+                                      <Typography
+                                        variant="body2"
+                                        sx={{ color: '#666666', fontSize: '0.9rem', mb: 0.5 }}
+                                      >
+                                        {stat.label}
+                                      </Typography>
+                                      <Typography
+                                        variant="h6"
+                                        sx={{ color: stat.color, fontWeight: 700, fontSize: '1.25rem' }}
+                                      >
+                                        {stat.value}
+                                      </Typography>
+                                    </Box>
+                                  </CardContent>
+                                </StyledCard>
+                              </Grid>
+                            ))}
+                          </Grid>
+                          <StyledCard sx={{ mt: 3 }}>
+                            <CardContent>
+                              <Typography variant="h6" sx={{ fontWeight: 600, color: '#050D31', mb: 2 }}>
+                                Detail Per Mata Kuliah
+                              </Typography>
+                              <TableContainer>
+                                <Table>
+                                  <TableHead>
+                                    <TableRow>
+                                      <TableCell sx={{ fontWeight: 600, color: '#050D31' }}>Mata Kuliah</TableCell>
+                                      <TableCell sx={{ fontWeight: 600, color: '#050D31' }}>Rata-rata Nilai</TableCell>
+                                      <TableCell sx={{ fontWeight: 600, color: '#050D31' }}>Nilai Tertinggi</TableCell>
+                                      <TableCell sx={{ fontWeight: 600, color: '#050D31' }}>Nilai Terendah</TableCell>
+                                      <TableCell sx={{ fontWeight: 600, color: '#050D31' }}>Penyelesaian</TableCell>
+                                      <TableCell sx={{ fontWeight: 600, color: '#050D31' }}>Kehadiran</TableCell>
+                                    </TableRow>
+                                  </TableHead>
+                                  <TableBody>
+                                    {getProgressAnalysisData().stats.map((stat, index) => (
+                                      <TableRow key={index}>
+                                        <TableCell sx={{ color: '#050D31' }}>{stat.matakuliah}</TableCell>
+                                        <TableCell>
+                                          <Chip
+                                            label={stat.avgScore}
+                                            color={parseFloat(stat.avgScore) >= 60 ? 'success' : 'error'}
+                                            size="small"
+                                            sx={{ fontWeight: 500, bgcolor: parseFloat(stat.avgScore) >= 60 ? '#E8F5E9' : '#FFEBEE' }}
+                                          />
+                                        </TableCell>
+                                        <TableCell sx={{ color: '#050D31' }}>{stat.highestScore || '-'}</TableCell>
+                                        <TableCell sx={{ color: '#050D31' }}>{stat.lowestScore || '-'}</TableCell>
+                                        <TableCell sx={{ color: '#050D31' }}>{stat.completionRate}</TableCell>
+                                        <TableCell sx={{ color: '#050D31' }}>{stat.attendance}</TableCell>
+                                      </TableRow>
+                                    ))}
+                                    {getProgressAnalysisData().stats.length === 0 && (
+                                      <TableRow>
+                                        <TableCell colSpan={6} sx={{ textAlign: 'center', color: '#666666', py: 4 }}>
+                                          Tidak ada data tersedia
+                                        </TableCell>
+                                      </TableRow>
+                                    )}
+                                  </TableBody>
+                                </Table>
+                              </TableContainer>
+                            </CardContent>
+                          </StyledCard>
+                        </Box>
+                      )}
+                    </>
+                  )}
+                </>
               )}
             </>
           )}
