@@ -241,7 +241,7 @@ const DashboardDosen = () => {
                   fontFamily: '"Roboto", sans-serif',
                 }}
               >
-                Mata Kuliah Saya
+                Mata Kuliah
               </Typography>
               <Divider sx={{ mb: 4, borderColor: '#E0E0E0' }} />
               <Grid container spacing={4}>

@@ -31,6 +31,7 @@ import StudentProgress from '../pages/mahasiswa/pages/StudentProgress';
 import DosenProfilePage from '../pages/dosen/pages/ProfilePage';
 import MahasiswaProfilePage from '../pages/mahasiswa/pages/ProfilePage';
 import SkripsiManagement from '../pages/dosen/pages/SkripsiManagement';
+import TeamKBK from '../pages/dosen/pages/TimKBK';
 
 const AppRoutes = () => {
   return (
@@ -64,6 +65,7 @@ const AppRoutes = () => {
         <Route path="exams" element={<ExamManagement />} />
         <Route path="profile" element={<DosenProfilePage />} />
         <Route path="bank-skripsi" element={<SkripsiManagement/>} />
+        <Route path="kbk" element={<TeamKBK/>} />
       </Route>
 
       {/* Mahasiswa Routes */}

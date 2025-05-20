@@ -401,6 +401,7 @@ export interface ApiDosenDosen extends Struct.CollectionTypeSchema {
     >;
     proposal: Schema.Attribute.Relation<'oneToOne', 'api::proposal.proposal'>;
     publishedAt: Schema.Attribute.DateTime;
+    role: Schema.Attribute.String;
     topics: Schema.Attribute.Relation<'oneToMany', 'api::topic.topic'>;
     undangan_mahasiswa: Schema.Attribute.Relation<
       'oneToOne',
@@ -518,6 +519,40 @@ export interface ApiJurusanJurusan extends Struct.CollectionTypeSchema {
       'api::program-studi.program-studi'
     >;
     publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiKbkInfoKbkInfo extends Struct.CollectionTypeSchema {
+  collectionName: 'kbk_infos';
+  info: {
+    displayName: 'kbk-info';
+    pluralName: 'kbk-infos';
+    singularName: 'kbk-info';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    date: Schema.Attribute.Date;
+    description: Schema.Attribute.Text;
+    file: Schema.Attribute.Media<
+      'images' | 'files' | 'videos' | 'audios',
+      true
+    >;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::kbk-info.kbk-info'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    title: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1651,6 +1686,7 @@ export interface PluginUsersPermissionsUser
       Schema.Attribute.SetMinMaxLength<{
         minLength: 6;
       }>;
+    jabatan: Schema.Attribute.String;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -1700,6 +1736,7 @@ declare module '@strapi/strapi' {
       'api::jawaban-kuis.jawaban-kuis': ApiJawabanKuisJawabanKuis;
       'api::jawaban-ujian.jawaban-ujian': ApiJawabanUjianJawabanUjian;
       'api::jurusan.jurusan': ApiJurusanJurusan;
+      'api::kbk-info.kbk-info': ApiKbkInfoKbkInfo;
       'api::kuis.kuis': ApiKuisKuis;
       'api::mahasiswa.mahasiswa': ApiMahasiswaMahasiswa;
       'api::matakuliah.matakuliah': ApiMatakuliahMatakuliah;

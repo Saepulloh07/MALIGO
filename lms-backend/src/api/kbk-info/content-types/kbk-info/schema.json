@@ -1,0 +1,33 @@
+{
+  "kind": "collectionType",
+  "collectionName": "kbk_infos",
+  "info": {
+    "singularName": "kbk-info",
+    "pluralName": "kbk-infos",
+    "displayName": "kbk-info"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    },
+    "date": {
+      "type": "date"
+    },
+    "file": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "type": "media",
+      "multiple": true
+    }
+  }
+}

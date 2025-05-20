@@ -79,6 +79,9 @@
       "relation": "oneToOne",
       "target": "api::mahasiswa.mahasiswa",
       "mappedBy": "users_permissions_user"
+    },
+    "jabatan": {
+      "type": "string"
     }
   }
 }

@@ -58,6 +58,9 @@
       "relation": "oneToOne",
       "target": "api::proposal.proposal",
       "mappedBy": "dosen"
+    },
+    "role": {
+      "type": "string"
     }
   }
 }

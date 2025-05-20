@@ -73,7 +73,7 @@ const LandingPage = () => {
                       lineHeight: 1.2,
                     }}
                   >
-                    Modular Adaptive Learning and Intelligent Growth Online
+                    Modular Adaptive Learning and Intelligent Growth
                   </Typography>
                   <Typography
                     variant="h5"
